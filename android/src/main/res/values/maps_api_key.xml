@@ -1,5 +1,5 @@
 <!--
-  Copyright 2014 Google Inc. All rights reserved.
+  Copyright 2015 Schedo Inc. All rights reserved.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -16,5 +16,5 @@
 
 <resources>
     <!-- Replace with your own API key -->
-    <string name="maps_api_key" translatable="false">ReplaceWithYourApiKey</string>
+    <string name="maps_api_key" translatable="false">AIzaSyCEwYcHJG6QMwrMmq87Yjg3uhgODGeXm7g</string>
 </resources>

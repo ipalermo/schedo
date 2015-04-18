@@ -1,5 +1,5 @@
 <!--
-  Copyright 2014 Google Inc. All rights reserved.
+  Copyright 2015 Schedo Inc. All rights reserved.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@
         android:layout_weight="5"
         android:orientation="vertical">
 
-        <com.google.samples.apps.iosched.ui.widget.SlidingTabLayout
+        <com.ncode.android.apps.schedo.ui.widget.SlidingTabLayout
             android:background="@color/tab_background"
             android:id="@+id/livestream_sliding_tabs"
             android:layout_width="match_parent"

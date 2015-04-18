@@ -1,4 +1,4 @@
-    Copyright 2014 Google Inc. All rights reserved.
+    Copyright 2015 Schedo Inc. All rights reserved.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ dialogTitle, dialogText, dialogYes, dialogNo | no | If the dialog fields are pre
 
 The reason we use the concept of a GCM key is that the application has to
 synchronize the user's data (sessions selected to be in schedule) with the
-Google I/O website.
+Schedo website.
 
 "GCM key" or "GCM group ID" is not part of the GCM jargon, it's something
 specific to this app.

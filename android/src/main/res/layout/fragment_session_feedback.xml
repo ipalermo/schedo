@@ -1,5 +1,5 @@
 <!--
-  Copyright 2014 Google Inc. All rights reserved.
+  Copyright 2015 Schedo Inc. All rights reserved.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal">
 
-                <com.google.samples.apps.iosched.ui.widget.NumberRatingBar
+                <com.ncode.android.apps.schedo.ui.widget.NumberRatingBar
                     style="@style/FeedbackNumberRatingBar"
                     android:id="@+id/rating_bar_1" />
 
@@ -110,7 +110,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal">
 
-                <com.google.samples.apps.iosched.ui.widget.NumberRatingBar
+                <com.ncode.android.apps.schedo.ui.widget.NumberRatingBar
                     style="@style/FeedbackNumberRatingBar"
                     android:id="@+id/rating_bar_2" />
 
@@ -141,7 +141,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal">
 
-                <com.google.samples.apps.iosched.ui.widget.NumberRatingBar
+                <com.ncode.android.apps.schedo.ui.widget.NumberRatingBar
                     style="@style/FeedbackNumberRatingBar"
                     android:id="@+id/rating_bar_3" />
 

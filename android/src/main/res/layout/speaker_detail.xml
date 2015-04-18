@@ -1,5 +1,5 @@
 <!--
-  Copyright 2014 Google Inc. All rights reserved.
+  Copyright 2015 Schedo Inc. All rights reserved.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@
     android:layout_height="wrap_content"
     android:layout_marginBottom="16dp">
 
-    <com.google.samples.apps.iosched.ui.widget.BezelImageView android:id="@+id/speaker_image"
+    <com.ncode.android.apps.schedo.ui.widget.BezelImageView
+        android:id="@+id/speaker_image"
         android:scaleType="centerCrop"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"

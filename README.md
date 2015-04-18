@@ -1,7 +1,7 @@
-Google I/O Android App
+Schedo Android App
 ======================
 
-Google I/O is a developer conference held each year with two days of deep
+Schedo is a developer conference held each year with two days of deep
 technical content featuring technical sessions and hundreds of demonstrations
 from developers showcasing their technologies.
 
@@ -51,7 +51,7 @@ We hope the source code for this app is useful for you as a reference or startin
 
 <h2>Copyright</h2>
 
-    Copyright 2014 Google Inc. All rights reserved.
+    Copyright 2015 Schedo Inc. All rights reserved.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.

@@ -1,5 +1,5 @@
 <!--
-  Copyright 2014 Google Inc. All rights reserved.
+  Copyright 2015 Schedo Inc. All rights reserved.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.google.samples.apps.iosched.ui.debug.DebugActionRunnerActivity$PlaceholderFragment">
+    tools:context="com.ncode.android.apps.schedo.ui.debug.DebugActionRunnerActivity$PlaceholderFragment">
 
     <LinearLayout
         android:layout_width="fill_parent"

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Google Inc. All rights reserved.
+ * Copyright 2015 Schedo Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ public interface Config {
    * The manifest version is used to name the manifest file (manifest_v{version}.json) and as
    * the major version of the generated session files.
    */
-  public final int MANIFEST_VERSION = 3;
+  public final int MANIFEST_VERSION = 1;
 
   public final String MANIFEST_NAME = "manifest_v"+MANIFEST_VERSION+".json";
   public final String MANIFEST_NAME_STAGING = "manifest_v"+MANIFEST_VERSION+"__qa_.json";
@@ -54,7 +54,7 @@ public interface Config {
   // instead of the normal session list. 
   public final String VIDEO_CATEGORY = "ID_OF_THE_CATEGORY_THAT_MAKES_A_VIDEO_SESSION";
 
-  public final String CLOUD_STORAGE_BUCKET = "YOUR_APPENGINE_PROJECTNAME.appspot.com";
+  public final String CLOUD_STORAGE_BUCKET = "standardbucket";
   public final String CLOUD_STORAGE_BASE_URL = "http://storage.googleapis.com/"+CLOUD_STORAGE_BUCKET+"/";
 
   // Used when the CMS doesn't have a proper live stream Youtube URL but we still want to

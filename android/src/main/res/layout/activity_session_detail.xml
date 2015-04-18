@@ -1,5 +1,5 @@
 <!--
-  Copyright 2014 Google Inc. All rights reserved.
+  Copyright 2015 Schedo Inc. All rights reserved.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
   limitations under the License.
   -->
 
-<com.google.samples.apps.iosched.ui.widget.ObservableScrollView
+<com.ncode.android.apps.schedo.ui.widget.ObservableScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:iosched="http://schemas.android.com/apk/res-auto"
     xmlns:plus="http://schemas.android.com/apk/lib/com.google.android.gms.plus"
@@ -53,7 +53,7 @@
             android:paddingBottom="@dimen/session_details_extra_space_bottom"
             android:clipToPadding="false">
 
-            <com.google.samples.apps.iosched.ui.widget.MessageCardView
+            <com.ncode.android.apps.schedo.ui.widget.MessageCardView
                 android:id="@+id/live_now_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -69,7 +69,7 @@
                 android:visibility="gone"
                 />
 
-            <com.google.samples.apps.iosched.ui.widget.MessageCardView
+            <com.ncode.android.apps.schedo.ui.widget.MessageCardView
                 android:id="@+id/give_feedback_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -259,4 +259,4 @@
 
     </FrameLayout>
 
-</com.google.samples.apps.iosched.ui.widget.ObservableScrollView>
+</com.ncode.android.apps.schedo.ui.widget.ObservableScrollView>

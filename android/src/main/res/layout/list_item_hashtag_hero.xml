@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!--
-  Copyright 2014 Google Inc. All rights reserved.
+  Copyright 2015 Schedo Inc. All rights reserved.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@
         android:id="@+id/name"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/io14_hashtag"
+        android:text="@string/event_hashtag"
         android:gravity="center"
         android:textSize="@dimen/hashtag_hero_text_size"
         android:textColor="@color/body_text_1_inverse"/>

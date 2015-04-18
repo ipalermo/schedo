@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!--
-  Copyright 2014 Google Inc. All rights reserved.
+  Copyright 2015 Schedo Inc. All rights reserved.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
   limitations under the License.
   -->
 
-<com.google.samples.apps.iosched.ui.widget.CollectionView
+<com.ncode.android.apps.schedo.ui.widget.CollectionView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:iosched="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -30,4 +30,4 @@
     android:layout_marginStart="@dimen/social_hz_margin"
     android:layout_marginEnd="@dimen/social_hz_margin"
     android:clipToPadding="false"
-    tools:context="com.google.samples.apps.iosched.ui.HashtagsFragment" />
+    tools:context="com.ncode.android.apps.schedo.ui.HashtagsFragment" />

@@ -1,5 +1,5 @@
 <!--
-  Copyright 2014 Google Inc. All rights reserved.
+  Copyright 2015 Schedo Inc. All rights reserved.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <!-- Shown in the schedule to indicate how many sessions are available on that particular time slot. -->
     <plurals name="schedule_block_subtitle">
-        <item quantity="one"><xliff:g id="number_of_sessions">%1$d</xliff:g> available session</item>
-        <item quantity="other"><xliff:g id="number_of_sessions">%1$d</xliff:g> available sessions</item>
+        <item quantity="one"><xliff:g id="number_of_sessions">%1$d</xliff:g> available activities</item>
+        <item quantity="other"><xliff:g id="number_of_sessions">%1$d</xliff:g> available activities</item>
     </plurals>
 
     <!-- Shows as a notification on the system bar to alert user that some of their sessions are about to begin. -->
@@ -46,7 +46,7 @@
 
     <!-- Shown in the 'About' window of the app. -->
     <string name="about_body"><![CDATA[
-        <b>Google I/O 2014</b><br>
+        <b>Schedo 2014</b><br>
         Version %s<br><br>
         <a href="http://m.google.com/utos">Terms of Service</a><br><br>
         <a href="http://www.google.com/policies/privacy/">Privacy Policy</a>
@@ -69,11 +69,11 @@
 
     <!-- Accessibility description for a button that, when clicked, adds the currently
     displayed session to the user's schedule. -->
-    <string name="add_to_schedule_desc">Button to add session to your schedule</string>
+    <string name="add_to_schedule_desc">Button to add activity to your schedule</string>
 
     <!-- Shown in a drop-down list on the main screen, indicating that all conference sessions
     are being displayed. -->
-    <string name="all_sessions">All Sessions</string>
+    <string name="all_sessions">All Activities</string>
 
     <!-- Shown in a drop-down list on the main screen, indicating that all conference themes
     are being displayed. Themes are major categories for sessions (the themes are Design,
@@ -94,7 +94,7 @@
     <string name="all_years">All Years</string>
 
     <!-- Name of the application, shown in the application's title bar. -->
-    <string name="app_name">Google I/O 2014</string>
+    <string name="app_name">Schedo</string>
 
     <!-- Label on a button that is one possible answer to the question "Are you attending the
     conference in person in San Francisco or remotely via livestream?" -->
@@ -104,13 +104,13 @@
     conference in person in San Francisco or remotely via livestream?" -->
     <string name="attending_remotely">Remotely</string>
 
-    <!-- Label on a button that allows the user to browse Google I/O Extended events that they
+    <!-- Label on a button that allows the user to browse Schedo Extended events that they
     might be interested in attending. -->
     <string name="browse_events">Browse events</string>
 
     <!-- Label on a button that allows the user to see what conference sessions are available
     at a particular time. -->
-    <string name="browse_sessions">Browse sessions...</string>
+    <string name="browse_sessions">Browse activities...</string>
 
     <!-- Shown on Configure WiFi dialog, instructing user on what button to click. -->
     <string name="calltoaction_wifi_configure"><![CDATA[
@@ -168,7 +168,7 @@
 
     <string name="description_debug" translatable="false">Debug and tests</string>
 
-    <!-- Menu item that takes the user to a page that shows a list of Google I/O Extended events. -->
+    <!-- Menu item that takes the user to a page that shows a list of Schedo Extended events. -->
     <string name="description_i_o_extended">I/O Extended</string>
 
     <!-- Menu item that takes the user to the conference venue map screen -->
@@ -194,7 +194,7 @@
 
     <!-- Explanation of wifi setup that appears in the WiFi setup dialog box. -->
     <string name="description_setup_wifi_body"><![CDATA[
-        Since you\'re attending in person, we can set up this device to access the conference Wi-Fi network (5Ghz only).
+        Since you\'re attending in person, we can set up this device to access the event Wi-Fi network (5Ghz only).
         By configuring your Wi-Fi now, you\'ll help prevent network congestion.
     ]]></string>
 
@@ -215,13 +215,13 @@
 
     <!-- Shown when trying to watch a video of a session, alerting user that no captions are
     available for that video. -->
-    <string name="empty_captions">No captions found for this session.</string>
+    <string name="empty_captions">No captions found for this video.</string>
 
     <!-- Shown on the Session page, alerting user that no details could be found for that session. -->
-    <string name="empty_session_detail">No session details found.</string>
+    <string name="empty_session_detail">No activity details found.</string>
 
     <!-- Shown on the session search page, alerting user that no conference sessions could be found. -->
-    <string name="empty_sessions">No sessions found.</string>
+    <string name="empty_sessions">No activities found.</string>
 
     <!-- Shown on several screens alerting user that no data is being shown because a background
     data synchronization is still in progress. Data will show as soon as the sync ends. -->
@@ -229,14 +229,14 @@
 
     <!-- Shown on a widget that normally displays upcoming sessions. This is shown after the
     conference, when there are no more sessions to show. -->
-    <string name="empty_widget_text">No more upcoming sessions.\nSee you next year!</string>
+    <string name="empty_widget_text">No more upcoming shows.\n</string>
 
     <!-- Shown on a widget instructing user how to start using the widget. -->
-    <string name="empty_widget_text_signed_out">Touch the Google I/O 2014 logo above to sign in and begin using the app.</string>
+    <string name="empty_widget_text_signed_out">Touch the Schedo logo above to sign in and begin using the app.</string>
 
     <!-- Shown as a header on a list of sessions to indicate that the sessions that appear on that
     group have already ended. -->
-    <string name="ended_sessions">Ended sessions</string>
+    <string name="ended_sessions">Ended activities</string>
 
     <!-- Text on a drop-down list that allows the user to view Google Developer Experts from all cities (this is a filter). -->
     <string name="experts_directory_all_cities">All cities</string>
@@ -244,8 +244,8 @@
     <!-- Text on a drop-down list that allows the user to view Google Developer Experts from all countries (this is a filter). -->
     <string name="experts_directory_all_countries">All countries</string>
 
-    <!-- Text that appears next to a person's name to indicate that they are attending Google I/O in person. Alternate translations might be: "present in person", "present at the event", "present onsite", etc. -->
-    <string name="experts_directory_attending">attending I/O</string>
+    <!-- Text that appears next to a person's name to indicate that they are attending Schedo in person. Alternate translations might be: "present in person", "present at the event", "present onsite", etc. -->
+    <string name="experts_directory_attending">attending event</string>
 
     <!-- Description of the Google Developer Expert program that appears in the Google Developer Expert directory screen, giving an introduction about what the term means. -->
     <string name="experts_directory_header_body">The Google Developer Experts (GDE) title recognizes the outstanding developers who exhibit great expertise in one or more Google technologies and share it with the developer community. GDEs are gurus, mentors and evangelists; they create tutorials, code samples, and write books and blogs; they publish videos, drive community projects, and present at events large and small. These independent developers bring their real-world experience and knowledge working with Google technologies to developer communities worldwide.</string>
@@ -257,10 +257,10 @@
     <string name="experts_directory_header_title">Who are the Google Developers Experts?</string>
 
     <!-- Message that appears as feedback when the user has indicated that they are attending I/O in person. -->
-    <string name="explore_attending_in_person_toast">Attending I/O in person (you can change this in Settings)</string>
+    <string name="explore_attending_in_person_toast">Attending event in person (you can change this in Settings)</string>
 
     <!-- Message that appears as feedback when the user has indicated that they are attending I/O remotely. -->
-    <string name="explore_attending_remotely_toast">Attending I/O remotely (you can change this in Settings)</string>
+    <string name="explore_attending_remotely_toast">Attending event remotely (you can change this in Settings)</string>
 
     <!-- Label for a button to answer the question "Would you like to send feedback
     about this session?" which, when clicked, allows the user to send their feedback (ratings
@@ -279,7 +279,7 @@
     <string name="google_account_required_title">Google Account Required</string>
 
     <!-- List dropdown item on the Video Library screen allowing the user to choose to see
-    the videos from a particular year of Google I/O. -->
+    the videos from a particular year of Schedo. -->
     <string name="google_i_o_year">I/O <xliff:g id="year">%1$d</xliff:g></string>
 
     <!-- Label on a button that the user can click to dismiss an reminder or information message.
@@ -288,7 +288,7 @@
     <string name="got_it">Got it</string>
 
     <!-- Conference hashtag -->
-    <string name="io14_hashtag" translatable="false">#io14</string>
+    <string name="event_hashtag" translatable="false"></string>
 
     <!-- Short text appended to the end of the session subtitle when the session will be live
     streamed. Constrained to 10 chars because the session subtitle should be small enough to fit
@@ -372,7 +372,7 @@
     <string name="navdrawer_item_explore">Explore</string>
 
     <!-- Accessibility description for menu item to open the Explore screen. -->
-    <string name="navdrawer_item_explore_a11y">Explore Google I/O</string>
+    <string name="navdrawer_item_explore_a11y">Explore Schedo</string>
 
     <!-- Menu item to open the Map screen [CHAR_LIMIT=20] -->
     <string name="navdrawer_item_map">Map</string>
@@ -501,7 +501,7 @@
 
     <!-- An application permission (this permission allows the application to modify the Google
     I/O schedule data). Shows on a permissions dialog screen. -->
-    <string name="permission_write">Modify Google I/O schedule data</string>
+    <string name="permission_write">Modify Schedo schedule data</string>
 
     <!-- Description of the Google+ +1 button for accessibility screen readers -->
     <string name="plus_one_description_standard">Touch to plus one.</string>
@@ -515,11 +515,11 @@
     <string name="pref_analytics_enabled_description">Send anonymous statistics about app usage
     to Google.</string>
 
-    <!-- Summary in the Settings screen for the "I will be at Google I/O" option -->
+    <!-- Summary in the Settings screen for the "I will be at Schedo" option -->
     <string name="pref_attendee_at_venue_description">Display all sessions and on-site events. If unchecked, only live-streamed sessions will be shown.</string>
 
-    <!-- Title in the Settings screen for the "I will be at Google I/O" option -->
-    <string name="pref_attendee_at_venue_title">I\'ll be at Google I/O!</string>
+    <!-- Title in the Settings screen for the "I will be at Schedo" option -->
+    <string name="pref_attendee_at_venue_title">I\'ll be at Schedo!</string>
 
     <!-- Summary in the Settings screen for the "Show local times" option -->
     <string name="pref_local_times_description">Use your local time instead of the conference’s local time.</string>
@@ -561,11 +561,11 @@
 
     <!-- Text of a card shown in the session explorer after I/O has started that asks the user if
     he wants to configure the WiFi. "Yes!" and "No, thanks" are the buttons shown in the card -->
-    <string name="question_setup_wifi_after_i_o_start">Google I/O is here! Would you like to configure the conference WiFi now?</string>
+    <string name="question_setup_wifi_after_i_o_start">Schedo is here! Would you like to configure the conference WiFi now?</string>
 
     <!-- Text of a card shown in the session explorer before I/O has started that asks the user if
     he wants to configure the WiFi. "Yes!" and "No, thanks" are the buttons shown in the card -->
-    <string name="question_setup_wifi_before_i_o_start">Google I/O is coming up! Would you like to configure the conference WiFi now?</string>
+    <string name="question_setup_wifi_before_i_o_start">Schedo is coming up! Would you like to configure the conference WiFi now?</string>
 
     <!-- Section title for videos related to a particular event session -->
     <string name="related_videos">Related Videos</string>
@@ -590,10 +590,10 @@
 
     <!-- Search label that shows the type of data being searched for when the user clicks the
     Search button. -->
-    <string name="search_label">Google I/O sessions</string>
+    <string name="search_label">Schedo sessions</string>
 
     <!-- A fragment of text appended to a Google calendar event indicating it was added by this application -->
-    <string name="session_calendar_suffix">- added by Google I/O Android app</string>
+    <string name="session_calendar_suffix">- added by Schedo Android app</string>
 
     <!-- Accessibility text announced as a response to pressing a button to add a session to the schedule. -->
     <string name="session_details_a11y_session_added">Session added to your schedule</string>
@@ -791,10 +791,10 @@
     <string name="title_search">Search</string>
 
     <!-- Map breadcrumb text for navigating session entries -->
-    <string name="title_session_detail">Session Information</string>
+    <string name="title_session_detail">Activity Information</string>
 
     <!-- Label for SessionFeedback activity -->
-    <string name="title_session_feedback">Session Feedback</string>
+    <string name="title_session_feedback">Activity Feedback</string>
 
     <!-- Label for Settings activity -->
     <string name="title_settings">Settings</string>
@@ -825,7 +825,7 @@
     <string name="welcome_text">Before we begin, here is some important legal information regarding your use of this app. This will only take a minute!</string>
 
     <!-- Short text welcoming the user to the application -->
-    <string name="welcome_to_google_i_o_app">Welcome to the Google I/O app!</string>
+    <string name="welcome_to_google_i_o_app">Welcome to Schedo!</string>
 
     <!-- Text for a button which will add a wi-fi network -->
     <string name="wifi_dialog_button_configure">Add WiFi Network</string>

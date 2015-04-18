@@ -1,0 +1,9 @@
+TODO: Agregar el nombre del evento, en la pantalla de detalle de una sesion
+TODO: Agregar el nombre del evento, en las sessiones que aparecen en MI agenda(por ahora no hay una agenda para cada evento, mostrar todo junto)
+TODO:ver como agregar los dias de los eventos al slide de dias.
+provisorio para publicar rapido la app como muestra:
+hacer un query a la db que devuelva todos los dias de todos los eventos, meterlo en una matriz dentro de una clase a la que tenga acceso MyScheduleActivity
+
+TODO: crear tabla events_videos, events_tags,
+TODO borrar todo lo referente a la tabla sessions_events, y agregar clave extranjera en sessions hacia events y hacia location
+TODO: analizar que indices y trigger hay que cambiar/agregar

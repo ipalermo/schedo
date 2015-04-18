@@ -1,5 +1,5 @@
 <!--
-  Copyright 2014 Google Inc. All rights reserved.
+  Copyright 2015 Schedo Inc. All rights reserved.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -37,14 +37,14 @@
 
             <include layout="@layout/toolbar_actionbar" />
 
-            <com.google.samples.apps.iosched.ui.widget.SlidingTabLayout
+            <com.ncode.android.apps.schedo.ui.widget.SlidingTabLayout
                 android:background="@color/tab_background"
                 android:id="@+id/sliding_tabs"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
         </LinearLayout>
 
-        <com.google.samples.apps.iosched.ui.widget.MultiSwipeRefreshLayout
+        <com.ncode.android.apps.schedo.ui.widget.MultiSwipeRefreshLayout
             android:id="@+id/swipe_refresh_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -57,7 +57,7 @@
                 android:layout_height="0dp"
                 android:layout_weight="1" />
 
-        </com.google.samples.apps.iosched.ui.widget.MultiSwipeRefreshLayout>
+        </com.ncode.android.apps.schedo.ui.widget.MultiSwipeRefreshLayout>
 
         <include layout="@layout/include_butter_bar" />
     </LinearLayout>

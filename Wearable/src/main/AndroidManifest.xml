@@ -1,5 +1,5 @@
 <!--
-  Copyright 2014 Google Inc. All rights reserved.
+  Copyright 2015 Schedo Inc. All rights reserved.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
   -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.google.samples.apps.iosched">
+    package="com.ncode.android.apps.schedo">
 
     <application
-        android:name=".iowear.WearableApplication"
+        android:name="com.ncode.android.apps.schedo.iowear.WearableApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
@@ -29,7 +29,7 @@
             android:value="@integer/google_play_services_version" />
 
         <activity
-            android:name=".iowear.PagerActivity"
+            android:name="com.ncode.android.apps.schedo.iowear.PagerActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -41,7 +41,7 @@
         </activity>
 
         <activity
-            android:name=".iowear.FinishActivity"
+            android:name="com.ncode.android.apps.schedo.iowear.FinishActivity"
             android:label="@string/thanks">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -49,7 +49,7 @@
         </activity>
 
         <activity
-            android:name=".iowear.NotificationActivity"
+            android:name="com.ncode.android.apps.schedo.iowear.NotificationActivity"
             android:taskAffinity=""
             android:allowEmbedded="true">
             <intent-filter>
@@ -57,7 +57,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".iowear.HomeListenerService">
+        <service android:name="com.ncode.android.apps.schedo.iowear.HomeListenerService">
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.BIND_LISTENER" />
             </intent-filter>

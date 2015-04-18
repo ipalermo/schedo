@@ -1,5 +1,5 @@
 <!--
-  Copyright 2014 Google Inc. All rights reserved.
+  Copyright 2015 Schedo Inc. All rights reserved.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
   limitations under the License.
   -->
 
-<com.google.samples.apps.iosched.ui.widget.CollectionView
+<com.ncode.android.apps.schedo.ui.widget.CollectionView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/collection_view"
     android:layout_width="match_parent"

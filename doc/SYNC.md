@@ -1,4 +1,4 @@
-    Copyright 2014 Google Inc. All rights reserved.
+    Copyright 2015 Schedo Inc. All rights reserved.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ The sync process starts by making an HTTP GET request to load the manifest
 file. The URL is configured in the `MANIFEST_URL` constant in
 [Config.java](../android/src/main/java/com/google/samples/apps/iosched/Config.java).
 
-For Google I/O, we used Google Cloud Storage as the hosting service
+For Schedo, we used Google Cloud Storage as the hosting service
 to host these JSON files. However, if you are running your own event,
 you don't necessarily need to use Google Cloud Storage. Any reliable
 hosting service should work.

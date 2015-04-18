@@ -1,5 +1,5 @@
 <!--
-  Copyright 2014 Google Inc. All rights reserved.
+  Copyright 2015 Schedo Inc. All rights reserved.
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
     android:fitsSystemWindows="true"
     tools:context=".ui.phone.MapActivity">
 
-    <com.google.samples.apps.iosched.ui.widget.ScrimInsetsFrameLayout
+    <com.ncode.android.apps.schedo.ui.widget.ScrimInsetsFrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/capture_insets_frame_layout"
@@ -45,7 +45,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
-    </com.google.samples.apps.iosched.ui.widget.ScrimInsetsFrameLayout>
+    </com.ncode.android.apps.schedo.ui.widget.ScrimInsetsFrameLayout>
 
     <!-- Nav drawer -->
     <include layout="@layout/navdrawer" />

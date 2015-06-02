@@ -19,14 +19,30 @@ package com.ncode.android.apps.schedo.io.model;
 import com.ncode.android.apps.schedo.util.HashUtils;
 
 public class Day {
-    public String startTimestamp;
-    public String endTimestamp;
+    private String startTimestamp;
+    private String endTimestamp;
 
     public String getImportHashcode() {
         StringBuilder sb = new StringBuilder();
         sb.append("startTimestamp").append(startTimestamp == null ? "" : startTimestamp)
                 .append("endTimestamp").append(endTimestamp == null ? "" : endTimestamp);
         return HashUtils.computeWeakHash(sb.toString());
+    }
+
+    public String getStartTimestamp() {
+        return startTimestamp;
+    }
+
+    public String getEndTimestamp() {
+        return endTimestamp;
+    }
+
+    public void setStartTimestamp(String startTimestamp) {
+        this.startTimestamp = startTimestamp;
+    }
+
+    public void setEndTimestamp(String endTimestamp) {
+        this.endTimestamp = endTimestamp;
     }
 }
 

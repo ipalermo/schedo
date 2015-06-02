@@ -407,6 +407,7 @@ public class ScheduleContract {
             PATH_TAGS,
             PATH_ROOMS,
             PATH_SESSIONS,
+            PATH_EVENTS,
             PATH_FEEDBACK,
             PATH_MY_SCHEDULE,
             PATH_SPEAKERS,
@@ -711,7 +712,7 @@ public class ScheduleContract {
             return CONTENT_URI.buildUpon().appendPath(PATH_UNSCHEDULED).appendPath(interval).build();
         }
 
-        public static boolean isUnscheduledSessionsInInterval(Uri uri) {
+        public static boolean isUnscheduledEventsInInterval(Uri uri) {
             return uri != null && uri.toString().startsWith(
                     CONTENT_URI.buildUpon().appendPath(PATH_UNSCHEDULED).toString());
         }
@@ -737,8 +738,8 @@ public class ScheduleContract {
         }
 
 
-        /** Read {@link #SESSION_ID} from {@link Sessions} {@link Uri}. */
-        public static String getSessionId(Uri uri) {
+        /** Read {@link #EVENT_ID} from {@link Events} {@link Uri}. */
+        public static String getEventId(Uri uri) {
             return uri.getPathSegments().get(1);
         }
 

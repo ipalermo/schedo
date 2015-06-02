@@ -63,9 +63,11 @@ public class EventsHandler extends JSONHandler {
 
     @Override
     public void process(JsonElement element) {
+        //Event e = new Gson().fromJson(element, Event.class);
         for (Event event : new Gson().fromJson(element, Event[].class)) {
             mEvents.put(event.id, event);
         }
+        //mEvents.put(e.id,e);
     }
 
     @Override
@@ -200,7 +202,7 @@ public class EventsHandler extends JSONHandler {
                         // with the sessions_speakers relationship table) so that we can
                         // display it easily in lists without having to make an additional DB query
                         // (or another join) for each record.
-                .withValue(ScheduleContract.Events.EVENT_DAYS, event.makeCommaList(event.days))
+                .withValue(ScheduleContract.Events.EVENT_DAYS, event.getDays(event.days))
                         // Note: we store this comma-separated list of days IN ADDITION
                         // to storing the days in proper relational format (in the events_days
                         // relationship table). This is because when querying for events,

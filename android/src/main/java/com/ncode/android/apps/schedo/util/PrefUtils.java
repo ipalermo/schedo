@@ -45,9 +45,16 @@ public class PrefUtils  {
     public static final String PREF_ATTENDEE_AT_VENUE = "pref_attendee_at_venue";
 
     /**
+     * Boolean preference that when checked, indicates that the user will only be attending live remote
+     * conferences.
+     */
+    public static final String PREF_ONLY_REMOTE_ATTENDEE_ = "pref_only_remote_attendee";
+
+    /**
      * Boolean preference that indicates whether we installed the boostrap data or not.
      */
     public static final String PREF_DATA_BOOTSTRAP_DONE = "pref_data_bootstrap_done";
+
 
     /**
      * Integer preference that indicates what conference year the application is configured
@@ -127,6 +134,11 @@ public class PrefUtils  {
     public static boolean isAttendeeAtVenue(final Context context) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
         return sp.getBoolean(PREF_ATTENDEE_AT_VENUE, true);
+    }
+
+    public static boolean isOnlyRemoteAttendee(final Context context) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        return sp.getBoolean(PREF_ONLY_REMOTE_ATTENDEE_, true);
     }
 
     public static void markDataBootstrapDone(final Context context) {

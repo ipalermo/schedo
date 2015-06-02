@@ -776,4 +776,5 @@
     <string name="pref_nearby_title">Включить эксперимент PhysicalWeb</string>
     <string name="title_experts_directory">Эксперты</string>
     <string name="title_people_ive_met">Люди, которых я повстречал(-а)</string>
+    <string name="all_events">Все события</string>
 </resources>

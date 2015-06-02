@@ -130,6 +130,17 @@ public class ScheduleProvider extends ContentProvider {
     private static final int PARTNERS = 1400;
     private static final int PARTNERS_ID = 1401;
 
+    private static final int EVENTS = 1500;
+    private static final int EVENTS_MY_SCHEDULE = 1501;
+    private static final int EVENTS_SEARCH = 1503;
+    private static final int EVENTS_AT = 1504;
+    private static final int EVENTS_ID = 1505;
+    private static final int EVENTS_ID_SPEAKERS = 1506;
+    private static final int EVENTS_ID_TAGS = 1507;
+    private static final int EVENTS_ID_VIDEOS = 1508;
+    private static final int EVENTS_ROOM_AFTER = 1509;
+    private static final int EVENTS_UNSCHEDULED = 1510;
+    private static final int EVENTS_COUNTER = 1511;
 
     /**
      * Build and return a {@link UriMatcher} that catches all {@link Uri}
@@ -160,6 +171,18 @@ public class ScheduleProvider extends ContentProvider {
         matcher.addURI(authority, "sessions/*", SESSIONS_ID);
         matcher.addURI(authority, "sessions/*/speakers", SESSIONS_ID_SPEAKERS);
         matcher.addURI(authority, "sessions/*/tags", SESSIONS_ID_TAGS);
+
+        matcher.addURI(authority, "events", EVENTS);
+        matcher.addURI(authority, "events/my_schedule", EVENTS_MY_SCHEDULE);
+        matcher.addURI(authority, "events/search/*", EVENTS_SEARCH);
+        matcher.addURI(authority, "events/at/*", EVENTS_AT);
+        matcher.addURI(authority, "events/unscheduled/*", EVENTS_UNSCHEDULED);
+        matcher.addURI(authority, "events/room/*/after/*", EVENTS_ROOM_AFTER);
+        matcher.addURI(authority, "events/counter", EVENTS_COUNTER);
+        matcher.addURI(authority, "events/*", EVENTS_ID);
+        matcher.addURI(authority, "events/*/speakers", EVENTS_ID_SPEAKERS);
+        matcher.addURI(authority, "events/*/tags", EVENTS_ID_TAGS);
+        matcher.addURI(authority, "events/*/videos", EVENTS_ID_VIDEOS);
 
         matcher.addURI(authority, "my_schedule", MY_SCHEDULE);
 
@@ -255,6 +278,26 @@ public class ScheduleProvider extends ContentProvider {
                 return Tags.CONTENT_TYPE;
             case SESSIONS_ROOM_AFTER:
             	return Sessions.CONTENT_TYPE;
+            case EVENTS:
+                return Events.CONTENT_TYPE;
+            case EVENTS_MY_SCHEDULE:
+                return Events.CONTENT_TYPE;
+            case EVENTS_UNSCHEDULED:
+                return Events.CONTENT_TYPE;
+            case EVENTS_SEARCH:
+                return Events.CONTENT_TYPE;
+            case EVENTS_AT:
+                return Events.CONTENT_TYPE;
+            case EVENTS_ID:
+                return Events.CONTENT_ITEM_TYPE;
+            case EVENTS_ID_SPEAKERS:
+                return Speakers.CONTENT_TYPE;
+            case EVENTS_ID_TAGS:
+                return Tags.CONTENT_TYPE;
+            case EVENTS_ID_VIDEOS:
+                return Videos.CONTENT_TYPE;
+            case EVENTS_ROOM_AFTER:
+                return Events.CONTENT_TYPE;
             case MY_SCHEDULE:
                 return MySchedule.CONTENT_TYPE;
             case SPEAKERS:
@@ -322,7 +365,7 @@ public class ScheduleProvider extends ContentProvider {
     }
 
     /** Adds the tags filter query parameter to the given builder. */
-    private void addTagsFilter(SelectionBuilder builder, String tagsFilter) {
+    private void addTagsFilter(SelectionBuilder builder, String tagsFilter) { //TODO: make a method like this but for Events?
         // Note: for context, remember that session queries are done on a join of sessions
         // and the sessions_tags relationship table, and are GROUP'ed BY the session ID.
         String[] requiredTags = tagsFilter.split(",");
@@ -440,6 +483,21 @@ public class ScheduleProvider extends ContentProvider {
             }
             case SESSIONS_ID_TAGS: {
                 db.insertOrThrow(ScheduleDatabase.Tables.SESSIONS_TAGS, null, values);
+                notifyChange(uri);
+                return Tags.buildTagUri(values.getAsString(Tags.TAG_ID));
+            }
+            case EVENTS: {
+                db.insertOrThrow(ScheduleDatabase.Tables.EVENTS, null, values);
+                notifyChange(uri);
+                return Events.buildEventUri(values.getAsString(Events.EVENT_ID));
+            }
+            case EVENTS_ID_VIDEOS: {
+                db.insertOrThrow(ScheduleDatabase.Tables.EVENTS_VIDEOS, null, values);
+                notifyChange(uri);
+                return Videos.buildVideoUri(values.getAsString(ScheduleDatabase.EventsVideos.VIDEO_ID));
+            }
+            case EVENTS_ID_TAGS: {
+                db.insertOrThrow(ScheduleDatabase.Tables.EVENTS_TAGS, null, values);
                 notifyChange(uri);
                 return Tags.buildTagUri(values.getAsString(Tags.TAG_ID));
             }
@@ -651,6 +709,25 @@ public class ScheduleProvider extends ContentProvider {
                 return builder.table(ScheduleDatabase.Tables.MY_SCHEDULE)
                         .where(ScheduleContract.MyScheduleColumns.SESSION_ID + "=?", sessionId);
             }
+            case EVENTS: {
+                return builder.table(ScheduleDatabase.Tables.EVENTS);
+            }
+            case EVENTS_ID: {
+                final String eventId = Events.getEventId(uri);
+                return builder.table(ScheduleDatabase.Tables.EVENTS)
+                        .where(Events.EVENT_ID + "=?", eventId);
+            }
+            case EVENTS_ID_VIDEOS: {
+                final String eventId = Events.getEventId(uri);
+                return builder.table(ScheduleDatabase.Tables.EVENTS_VIDEOS)
+                        .where(Events.EVENT_ID + "=?", eventId);
+            }
+            case EVENTS_ID_TAGS: {
+                final String eventId = Events.getEventId(uri);
+                return builder.table(ScheduleDatabase.Tables.EVENTS_TAGS)
+                        .where(Events.EVENT_ID + "=?", eventId);
+            }
+
             case MY_SCHEDULE: {
                 return builder.table(ScheduleDatabase.Tables.MY_SCHEDULE)
                     .where(MySchedule.MY_SCHEDULE_ACCOUNT_NAME + "=?", getCurrentAccountName(uri, false));
@@ -818,6 +895,18 @@ public class ScheduleProvider extends ContentProvider {
                         .map(Sessions.SESSION_IN_MY_SCHEDULE, "IFNULL(in_schedule, 0)")
                         .groupBy(Qualified.SESSIONS_SESSION_ID);
             }
+            case EVENTS: {
+                // We query events on the joined table of events with sessions, rooms and tags.
+                // Since there may be more than one tag per session, we GROUP BY session ID.
+                // The starred sessions ("my schedule") are associated with a user, so we
+                // use the current user to select them properly
+                return builder.table(Tables.EVENTS_JOIN_SESSIONS_ROOMS_TAGS, getCurrentAccountName(uri, true))
+                        .mapToTable(Events._ID, ScheduleDatabase.Tables.EVENTS)
+                        .mapToTable(Events.EVENT_ID, ScheduleDatabase.Tables.EVENTS)
+                        .mapToTable(Sessions.SESSION_ID, ScheduleDatabase.Tables.SESSIONS)
+                        .map(Sessions.SESSION_IN_MY_SCHEDULE, "IFNULL(in_schedule, 0)")
+                        .groupBy(Qualified.SESSIONS_SESSION_ID);
+            }
             case SESSIONS_COUNTER: {
                 return builder.table(ScheduleDatabase.Tables.SESSIONS_JOIN_MYSCHEDULE, getCurrentAccountName(uri, true))
                         .map(Sessions.SESSION_INTERVAL_COUNT, "count(1)")
@@ -825,7 +914,8 @@ public class ScheduleProvider extends ContentProvider {
                         .groupBy(Sessions.SESSION_START + ", " + Sessions.SESSION_END);
             }
             case SESSIONS_MY_SCHEDULE: {
-                return builder.table(ScheduleDatabase.Tables.SESSIONS_JOIN_ROOMS_TAGS_FEEDBACK_MYSCHEDULE, getCurrentAccountName(uri, true))
+                final String eventId = Events.getEventId(uri);
+                return builder.table(ScheduleDatabase.Tables.SESSIONS_JOIN_ROOMS_TAGS_FEEDBACK_MYSCHEDULE, getCurrentAccountName(uri, true), eventId)
                         .mapToTable(Sessions._ID, ScheduleDatabase.Tables.SESSIONS)
                         .mapToTable(Sessions.ROOM_ID, ScheduleDatabase.Tables.SESSIONS)
                         .mapToTable(Sessions.SESSION_ID, ScheduleDatabase.Tables.SESSIONS)

@@ -65,7 +65,7 @@
 
     <!-- Shown in a drop-down list on the main screen, indicating that all conference sessions
     are being displayed. -->
-    <string name="all_sessions">Todas las actividades</string>
+    <string name="all_sessions">Todas las sesiones</string>
 
     <!-- Shown in a drop-down list on the main screen, indicating that all conference themes
     are being displayed. Themes are major categories for sessions (the themes are Design,
@@ -762,4 +762,5 @@
     <string name="pref_nearby_title">Activar el experimento PhysicalWeb</string>
     <string name="title_experts_directory">Expertos</string>
     <string name="title_people_ive_met">Personas que he conocido</string>
+    <string name="all_events">Todos los eventos</string>
 </resources>

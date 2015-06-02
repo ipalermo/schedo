@@ -18,7 +18,6 @@ package com.ncode.android.apps.schedo.ui;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.ListFragment;
 import android.app.LoaderManager;
 import android.content.Context;
 import android.content.CursorLoader;
@@ -77,20 +76,20 @@ import static com.ncode.android.apps.schedo.util.LogUtils.makeLogTag;
 import static com.ncode.android.apps.schedo.util.UIUtils.buildStyledSnippet;
 
 /**
- * A {@link ListFragment} showing a list of sessions. The fragment arguments
- * indicate what is the list of sessions to show. It may be a set of tag
+ * A {@link android.app.ListFragment} showing a list of events. The fragment arguments
+ * indicate what is the list of events to show. It may be a set of tag
  * filters or a search query.
  */
-public class SessionsFragment extends Fragment implements
+public class EventsFragment extends Fragment implements
         LoaderManager.LoaderCallbacks<Cursor>, CollectionViewCallbacks {
 
-    private static final String TAG = makeLogTag(SessionsFragment.class);
+    private static final String TAG = makeLogTag(EventsFragment.class);
 
     // Disable track branding
     public static final String EXTRA_NO_TRACK_BRANDING =
-            "com.google.android.iosched.extra.NO_TRACK_BRANDING";
+            "com.ncode.android.apps.schedo.extra.NO_TRACK_BRANDING";
 
-    private static final String STATE_SESSION_QUERY_TOKEN = "session_query_token";
+    private static final String STATE_EVENT_QUERY_TOKEN = "event_query_token";
     private static final String STATE_ARGUMENTS = "arguments";
 
     /** The handler message for updating the search query. */
@@ -106,19 +105,19 @@ public class SessionsFragment extends Fragment implements
     private Context mAppContext;
 
     // the cursor whose data we are currently displaying
-    private int mSessionQueryToken;
-    private Uri mCurrentUri = ScheduleContract.Sessions.CONTENT_URI;
+    private int mEventQueryToken;
+    private Uri mCurrentUri = ScheduleContract.Events.CONTENT_URI;
     private Cursor mCursor;
     private boolean mIsSearchCursor;
     private boolean mNoTrackBranding;
 
-    // this variable is relevant when we start the sessions loader, and indicates the desired
+    // this variable is relevant when we start the events loader, and indicates the desired
     // behavior when load finishes: if true, this is a full reload (for example, because filters
     // have been changed); if not, it's just a refresh because data has changed.
-    private boolean mSessionDataIsFullReload = false;
+    private boolean mEventDataIsFullReload = false;
 
     private ImageLoader mImageLoader;
-    private int mDefaultSessionColor;
+    private int mDefaultEventColor;
 
     private CollectionView mCollectionView;
     private TextView mEmptyView;
@@ -139,7 +138,7 @@ public class SessionsFragment extends Fragment implements
     private static final String CARD_ANSWER_YES = "CARD_ANSWER_YES";
     private static final String CARD_ANSWER_NO = "CARD_ANSWER_NO";
 
-    private ThrottledContentObserver mSessionsObserver, mTagsObserver;
+    private ThrottledContentObserver mEventsObserver, mTagsObserver;
 
     private Handler mHandler = new Handler() {
 
@@ -148,7 +147,7 @@ public class SessionsFragment extends Fragment implements
             if (msg.what == MESSAGE_QUERY_UPDATE) {
                 String query = (String) msg.obj;
                 reloadFromArguments(BaseActivity.intentToFragmentArguments(
-                        new Intent(Intent.ACTION_SEARCH, ScheduleContract.Sessions.buildSearchUri(query))));
+                        new Intent(Intent.ACTION_SEARCH, ScheduleContract.Events.buildSearchUri(query))));
             }
         }
 
@@ -164,16 +163,16 @@ public class SessionsFragment extends Fragment implements
         mCollectionView.setContentTopClearance(topClearance);
     }
 
-    // Called when there is a change on sessions in the content provider
-    private void onSessionsContentChanged() {
-        LOGD(TAG, "ThrottledContentObserver fired (sessions). Content changed.");
+    // Called when there is a change on events in the content provider
+    private void onEventsContentChanged() {
+        LOGD(TAG, "ThrottledContentObserver fired (events). Content changed.");
         if (!isAdded()) {
             LOGD(TAG, "Ignoring ContentObserver event (Fragment not added).");
             return;
         }
 
-        LOGD(TAG, "Requesting sessions cursor reload as a result of ContentObserver firing.");
-        reloadSessionData(false);
+        LOGD(TAG, "Requesting events cursor reload as a result of ContentObserver firing.");
+        reloadEventData(false);
     }
 
     // Called when there is a change in tag metadata in the content provider
@@ -188,14 +187,14 @@ public class SessionsFragment extends Fragment implements
         reloadTagMetadata();
     }
 
-    private void reloadSessionData(boolean fullReload) {
-        LOGD(TAG, "Reloading session data: " + (fullReload ? "FULL RELOAD" : "light refresh"));
-        mSessionDataIsFullReload = fullReload;
-        getLoaderManager().restartLoader(mSessionQueryToken, mArguments, SessionsFragment.this);
+    private void reloadEventData(boolean fullReload) {
+        LOGD(TAG, "Reloading event data: " + (fullReload ? "FULL RELOAD" : "light refresh"));
+        mEventDataIsFullReload = fullReload;
+        getLoaderManager().restartLoader(mEventQueryToken, mArguments, EventsFragment.this);
     }
 
     private void reloadTagMetadata() {
-        getLoaderManager().restartLoader(TAG_METADATA_TOKEN, null, SessionsFragment.this);
+        getLoaderManager().restartLoader(TAG_METADATA_TOKEN, null, EventsFragment.this);
     }
 
     @Override
@@ -210,20 +209,20 @@ public class SessionsFragment extends Fragment implements
         if (mWasPaused) {
             mWasPaused = false;
             LOGD(TAG, "Reloading data as a result of onResume()");
-            mSessionsObserver.cancelPendingCallback();
+            mEventsObserver.cancelPendingCallback();
             mTagsObserver.cancelPendingCallback();
-            reloadSessionData(false);
+            reloadEventData(false);
         }
     }
 
     public interface Callbacks {
-        public void onSessionSelected(String sessionId, View clickedView);
+        public void onEventSelected(String eventId, View clickedView);
         public void onTagMetadataLoaded(TagMetadata metadata);
     }
 
     private static Callbacks sDummyCallbacks = new Callbacks() {
         @Override
-        public void onSessionSelected(String sessionId, View clickedView) {}
+        public void onEventSelected(String eventId, View clickedView) {}
 
         @Override
         public void onTagMetadataLoaded(TagMetadata metadata) {}
@@ -239,25 +238,25 @@ public class SessionsFragment extends Fragment implements
             mImageLoader = new ImageLoader(this.getActivity());
         }
 
-        mDefaultSessionColor = getResources().getColor(R.color.default_session_color);
+        mDefaultEventColor = getResources().getColor(R.color.default_session_color);
 
         final TimeZone tz = PrefUtils.getDisplayTimeZone(getActivity());
         mDateFormat.setTimeZone(tz);
         mTimeFormat.setTimeZone(tz);
 
         if (savedInstanceState != null) {
-            mSessionQueryToken = savedInstanceState.getInt(STATE_SESSION_QUERY_TOKEN);
+            mEventQueryToken = savedInstanceState.getInt(STATE_EVENT_QUERY_TOKEN);
             mArguments = savedInstanceState.getParcelable(STATE_ARGUMENTS);
             if (mArguments != null) {
                 mCurrentUri = mArguments.getParcelable("_uri");
                 mNoTrackBranding = mArguments.getBoolean(EXTRA_NO_TRACK_BRANDING);
             }
 
-            if (mSessionQueryToken > 0) {
+            if (mEventQueryToken > 0) {
                 // Only if this is a config change should we initLoader(), to reconnect with an
                 // existing loader. Otherwise, the loader will be init'd when reloadFromArguments
                 // is called.
-                getLoaderManager().initLoader(mSessionQueryToken, null, SessionsFragment.this);
+                getLoaderManager().initLoader(mEventQueryToken, null, EventsFragment.this);
             }
         }
 
@@ -265,8 +264,8 @@ public class SessionsFragment extends Fragment implements
     }
 
     private boolean useExpandedMode() {
-        if (mCurrentUri != null && ScheduleContract.Sessions.CONTENT_URI.equals(mCurrentUri)) {
-            // If showing all sessions (landing page) do not use expanded mode,
+        if (mCurrentUri != null && ScheduleContract.Events.CONTENT_URI.equals(mCurrentUri)) {
+            // If showing all events (landing page) do not use expanded mode,
             // show info as condensed as possible
             return false;
         }
@@ -282,8 +281,8 @@ public class SessionsFragment extends Fragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-        ViewGroup root = (ViewGroup) inflater.inflate(R.layout.fragment_sessions, container, false);
-        mCollectionView = (CollectionView) root.findViewById(R.id.sessions_collection_view);
+        ViewGroup root = (ViewGroup) inflater.inflate(R.layout.fragment_events, container, false);
+        mCollectionView = (CollectionView) root.findViewById(R.id.events_collection_view);
         mPreloader = new Preloader(ROWS_TO_PRELOAD);
         mCollectionView.setOnScrollListener(mPreloader);
         mEmptyView = (TextView) root.findViewById(R.id.empty_text);
@@ -303,26 +302,26 @@ public class SessionsFragment extends Fragment implements
         // save arguments so we can reuse it when reloading from content observer events
         mArguments = arguments;
 
-        LOGD(TAG, "SessionsFragment reloading from arguments: " + arguments);
+        LOGD(TAG, "EventsFragment reloading from arguments: " + arguments);
         mCurrentUri = arguments.getParcelable("_uri");
         if (mCurrentUri == null) {
-            // if no URI, default to all sessions URI
-            LOGD(TAG, "SessionsFragment did not get a URL, defaulting to all sessions.");
-            arguments.putParcelable("_uri", ScheduleContract.Sessions.CONTENT_URI);
-            mCurrentUri = ScheduleContract.Sessions.CONTENT_URI;
+            // if no URI, default to all events URI
+            LOGD(TAG, "EventsFragment did not get a URL, defaulting to all events.");
+            arguments.putParcelable("_uri", ScheduleContract.Events.CONTENT_URI);
+            mCurrentUri = ScheduleContract.Events.CONTENT_URI;
         }
 
         mNoTrackBranding = mArguments.getBoolean(EXTRA_NO_TRACK_BRANDING);
 
-        if (ScheduleContract.Sessions.isSearchUri(mCurrentUri)) {
-            mSessionQueryToken = SessionsQuery.SEARCH_TOKEN;
+        if (ScheduleContract.Events.isSearchUri(mCurrentUri)) {
+            mEventQueryToken = EventsQuery.SEARCH_TOKEN;
         } else {
-            mSessionQueryToken = SessionsQuery.NORMAL_TOKEN;
+            mEventQueryToken = EventsQuery.NORMAL_TOKEN;
         }
 
-        LOGD(TAG, "SessionsFragment reloading, uri=" + mCurrentUri + ", expanded=" + useExpandedMode());
+        LOGD(TAG, "EventsFragment reloading, uri=" + mCurrentUri + ", expanded=" + useExpandedMode());
 
-        reloadSessionData(true); // full reload
+        reloadEventData(true); // full reload
         if (mTagMetadata == null) {
             reloadTagMetadata();
         }
@@ -343,10 +342,10 @@ public class SessionsFragment extends Fragment implements
 
         mAppContext = getActivity().getApplicationContext();
         mCallbacks = (Callbacks) activity;
-        mSessionsObserver = new ThrottledContentObserver(new ThrottledContentObserver.Callbacks() {
+        mEventsObserver = new ThrottledContentObserver(new ThrottledContentObserver.Callbacks() {
             @Override
             public void onThrottledContentObserverFired() {
-                onSessionsContentChanged();
+                onEventsContentChanged();
             }
         });
         mTagsObserver = new ThrottledContentObserver(new ThrottledContentObserver.Callbacks() {
@@ -356,7 +355,7 @@ public class SessionsFragment extends Fragment implements
             }
         });
         activity.getContentResolver().registerContentObserver(
-                ScheduleContract.Sessions.CONTENT_URI, true, mSessionsObserver);
+                ScheduleContract.Events.CONTENT_URI, true, mEventsObserver);
         activity.getContentResolver().registerContentObserver(
                 ScheduleContract.Tags.CONTENT_URI, true, mTagsObserver);
 
@@ -368,7 +367,7 @@ public class SessionsFragment extends Fragment implements
     public void onDetach() {
         super.onDetach();
         mCallbacks = sDummyCallbacks;
-        getActivity().getContentResolver().unregisterContentObserver(mSessionsObserver);
+        getActivity().getContentResolver().unregisterContentObserver(mEventsObserver);
         getActivity().getContentResolver().unregisterContentObserver(mTagsObserver);
 
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
@@ -386,7 +385,7 @@ public class SessionsFragment extends Fragment implements
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putInt(STATE_SESSION_QUERY_TOKEN, mSessionQueryToken);
+        outState.putInt(STATE_EVENT_QUERY_TOKEN, mEventQueryToken);
         outState.putParcelable(STATE_ARGUMENTS, mArguments);
     }
 
@@ -395,23 +394,23 @@ public class SessionsFragment extends Fragment implements
     public Loader<Cursor> onCreateLoader(int id, Bundle data) {
         LOGD(TAG, "onCreateLoader, id=" + id + ", data=" + data);
         final Intent intent = BaseActivity.fragmentArgumentsToIntent(data);
-        Uri sessionsUri = intent.getData();
-        if ((id == SessionsQuery.NORMAL_TOKEN || id == SessionsQuery.SEARCH_TOKEN) && sessionsUri == null) {
-            LOGD(TAG, "intent.getData() is null, setting to default sessions search");
-            sessionsUri = ScheduleContract.Sessions.CONTENT_URI;
+        Uri eventsUri = intent.getData();
+        if ((id == EventsQuery.NORMAL_TOKEN || id == EventsQuery.SEARCH_TOKEN) && eventsUri == null) {
+            LOGD(TAG, "intent.getData() is null, setting to default events search");
+            eventsUri = ScheduleContract.Events.CONTENT_URI;
         }
         Loader<Cursor> loader = null;
-        String liveStreamedOnlySelection = UIUtils.shouldShowLiveSessionsOnly(getActivity())
-                ? "IFNULL(" + ScheduleContract.Sessions.SESSION_LIVESTREAM_URL + ",'')!=''"
+        String liveStreamedOnlySelection = UIUtils.shouldShowLiveEventsOnly(getActivity())
+                ? "IFNULL(" + ScheduleContract.Events.EVENT_LIVESTREAM_URL + ",'')!=''"
                 : null;
-        if (id == SessionsQuery.NORMAL_TOKEN) {
-            LOGD(TAG, "Creating sessions loader for " + sessionsUri + ", selection " + liveStreamedOnlySelection);
-            loader = new CursorLoader(getActivity(), sessionsUri, SessionsQuery.NORMAL_PROJECTION,
-                    liveStreamedOnlySelection, null, ScheduleContract.Sessions.SORT_BY_TYPE_THEN_TIME);
-        } else if (id == SessionsQuery.SEARCH_TOKEN) {
-            LOGD(TAG, "Creating search loader for " + sessionsUri + ", selection " + liveStreamedOnlySelection);
-            loader = new CursorLoader(getActivity(), sessionsUri, SessionsQuery.SEARCH_PROJECTION,
-                    liveStreamedOnlySelection, null, ScheduleContract.Sessions.SORT_BY_TYPE_THEN_TIME);
+        if (id == EventsQuery.NORMAL_TOKEN) {
+            LOGD(TAG, "Creating events loader for " + eventsUri + ", selection " + liveStreamedOnlySelection);
+            loader = new CursorLoader(getActivity(), eventsUri, EventsQuery.NORMAL_PROJECTION,
+                    liveStreamedOnlySelection, null, ScheduleContract.Events.SORT_BY_TYPE_THEN_TIME);
+        } else if (id == EventsQuery.SEARCH_TOKEN) {
+            LOGD(TAG, "Creating search loader for " + eventsUri + ", selection " + liveStreamedOnlySelection);
+            loader = new CursorLoader(getActivity(), eventsUri, EventsQuery.SEARCH_PROJECTION,
+                    liveStreamedOnlySelection, null, ScheduleContract.Events.SORT_BY_TYPE_THEN_TIME);
         } else if (id == TAG_METADATA_TOKEN) {
             LOGD(TAG, "Creating metadata loader");
             loader = TagMetadata.createCursorLoader(getActivity());
@@ -426,15 +425,15 @@ public class SessionsFragment extends Fragment implements
         }
 
         int token = loader.getId();
-        LOGD(TAG, "Loader finished: "  + (token == SessionsQuery.NORMAL_TOKEN ? "sessions" :
-                token == SessionsQuery.SEARCH_TOKEN ? "search" : token == TAG_METADATA_TOKEN ? "tags" :
+        LOGD(TAG, "Loader finished: "  + (token == EventsQuery.NORMAL_TOKEN ? "events" :
+                token == EventsQuery.SEARCH_TOKEN ? "search" : token == TAG_METADATA_TOKEN ? "tags" :
                         "unknown"));
-        if (token == SessionsQuery.NORMAL_TOKEN || token == SessionsQuery.SEARCH_TOKEN) {
+        if (token == EventsQuery.NORMAL_TOKEN || token == EventsQuery.SEARCH_TOKEN) {
             if (mCursor != null && mCursor != cursor) {
                 mCursor.close();
             }
             mCursor = cursor;
-            mIsSearchCursor = token == SessionsQuery.SEARCH_TOKEN;
+            mIsSearchCursor = token == EventsQuery.SEARCH_TOKEN;
             LOGD(TAG, "Cursor has " + mCursor.getCount() + " items. Will now update collection view.");
             updateCollectionView();
         } else if (token == TAG_METADATA_TOKEN) {
@@ -461,7 +460,7 @@ public class SessionsFragment extends Fragment implements
                     updateCollectionView();
                 } else if (PrefUtils.PREF_ATTENDEE_AT_VENUE.equals(key)) {
                     if (mCursor != null) {
-                        reloadSessionData(true);
+                        reloadEventData(true);
                     }
                 }
             }
@@ -475,7 +474,7 @@ public class SessionsFragment extends Fragment implements
             // not ready!
             return;
         }
-        LOGD(TAG, "SessionsFragment updating CollectionView... " + (mSessionDataIsFullReload ?
+        LOGD(TAG, "EventsFragment updating CollectionView... " + (mEventDataIsFullReload ?
                 "(FULL RELOAD)" : "(light refresh)"));
         mCursor.moveToPosition(-1);
         int itemCount = mCursor.getCount();
@@ -492,18 +491,18 @@ public class SessionsFragment extends Fragment implements
         }
 
         Parcelable state = null;
-        if (!mSessionDataIsFullReload) {
+        if (!mEventDataIsFullReload) {
             // it's not a full reload, so we want to keep scroll position, etc
             state = mCollectionView.onSaveInstanceState();
         }
         LOGD(TAG, "Updating CollectionView with inventory, # groups = " + inv.getGroupCount()
                 + " total items = " + inv.getTotalItemCount());
         mCollectionView.setCollectionAdapter(this);
-        mCollectionView.updateInventory(inv, mSessionDataIsFullReload);
+        mCollectionView.updateInventory(inv, mEventDataIsFullReload);
         if (state != null) {
             mCollectionView.onRestoreInstanceState(state);
         }
-        mSessionDataIsFullReload = false;
+        mEventDataIsFullReload = false;
     }
 
     private void hideEmptyView() {
@@ -512,22 +511,22 @@ public class SessionsFragment extends Fragment implements
     }
 
     private void showEmptyView() {
-        final String searchQuery = ScheduleContract.Sessions.isSearchUri(mCurrentUri) ?
-                ScheduleContract.Sessions.getSearchQuery(mCurrentUri) : null;
+        final String searchQuery = ScheduleContract.Events.isSearchUri(mCurrentUri) ?
+                ScheduleContract.Events.getSearchQuery(mCurrentUri) : null;
 
-        if (mCurrentUri.equals(ScheduleContract.Sessions.CONTENT_URI)) {
-            // if showing all sessions, the empty view should say "loading..." because
-            // the only reason we would have no sessions at all is if we are currently
+        if (mCurrentUri.equals(ScheduleContract.Events.CONTENT_URI)) {
+            // if showing all events, the empty view should say "loading..." because
+            // the only reason we would have no events at all is if we are currently
             // preparing the database from the bootstrap data, which should only take a few
             // seconds.
             mEmptyView.setVisibility(View.GONE);
             mLoadingView.setVisibility(View.VISIBLE);
-        } else if (ScheduleContract.Sessions.isUnscheduledSessionsInInterval(mCurrentUri)) {
-            // Showing sessions in a given interval, so say "No sessions in this time slot."
-            mEmptyView.setText(R.string.no_matching_sessions_in_interval);
+        } else if (ScheduleContract.Events.isUnscheduledEventsInInterval(mCurrentUri)) {
+            // Showing events in a given interval, so say "No events in this time slot."
+            mEmptyView.setText(R.string.no_matching_events_in_interval);
             mEmptyView.setVisibility(View.VISIBLE);
             mLoadingView.setVisibility(View.GONE);
-        } else if (ScheduleContract.Sessions.isSearchUri(mCurrentUri)
+        } else if (ScheduleContract.Events.isSearchUri(mCurrentUri)
                 && (TextUtils.isEmpty(searchQuery) || "*".equals(searchQuery))) {
             // Empty search query (for example, user hasn't started to type the query yet),
             // so don't show an empty view.
@@ -535,7 +534,7 @@ public class SessionsFragment extends Fragment implements
             mEmptyView.setVisibility(View.VISIBLE);
             mLoadingView.setVisibility(View.GONE);
         } else {
-            // Showing sessions as a result of search or filter, so say "No matching sessions."
+            // Showing events as a result of search or filter, so say "No matching events."
             mEmptyView.setText(R.string.no_matching_sessions);
             mEmptyView.setVisibility(View.VISIBLE);
             mLoadingView.setVisibility(View.GONE);
@@ -574,28 +573,28 @@ public class SessionsFragment extends Fragment implements
             // For each data item, we decide what group it should appear under, then
             // we add it to that group (and create the group if it doesn't exist yet).
 
-            long sessionEnd = mCursor.getLong(mCursor.getColumnIndex(
-                    ScheduleContract.Sessions.SESSION_END));
+            long eventEnd = Long.parseLong(mCursor.getString(
+                    mCursor.getColumnIndex(ScheduleContract.Events.EVENT_DAYS)).split(",")[0]);
 
             ++dataIndex;
-            boolean showAsPast = !conferenceEnded && sessionEnd < now;
+            boolean showAsPast = !conferenceEnded && eventEnd < now;
             String groupLabel;
 
             if (expandedMode) {
-                String tags = mCursor.getString(mCursor.getColumnIndex(ScheduleContract.Sessions.SESSION_TAGS));
+                String tags = mCursor.getString(mCursor.getColumnIndex(ScheduleContract.Events.SESSION_TAGS));
                 TagMetadata.Tag groupTag = tags == null ? null
-                        : mTagMetadata.getGroupTag(tags.split(","), Config.Tags.SESSION_GROUPING_TAG_CATEGORY);
+                        : mTagMetadata.getGroupTag(tags.split(","), Config.Tags.EVENT_GROUPING_TAG_CATEGORY);
                 if (groupTag != null) {
                     groupLabel = groupTag.getName();
                 } else {
                     groupLabel = getString(R.string.others);
                 }
-                groupLabel += (showAsPast ? " (" + getString(R.string.session_finished) + ")" : "");
+                groupLabel += (showAsPast ? " (" + getString(R.string.event_finished) + ")" : "");
             } else {
-                groupLabel = showAsPast ? getString(R.string.ended_sessions) : "";
+                groupLabel = showAsPast ? getString(R.string.ended_events) : "";
             }
 
-            LOGV(TAG, "Data item #" + dataIndex + ", sessionEnd=" + sessionEnd + ", groupLabel="
+            LOGV(TAG, "Data item #" + dataIndex + ", eventEnd=" + eventEnd + ", groupLabel="
                     + groupLabel + " showAsPast=" + showAsPast);
 
             CollectionView.InventoryGroup group;
@@ -679,11 +678,11 @@ public class SessionsFragment extends Fragment implements
         int layoutId;
 
         if (useExpandedMode()) {
-            layoutId = R.layout.list_item_session;
+            layoutId = R.layout.list_item_event;
         } else {
             // Group HERO_GROUP_ID is the hero -- use a larger layout
             layoutId = (groupId == HERO_GROUP_ID) ? R.layout.list_item_session_hero :
-                    R.layout.list_item_session_summarized;
+                    R.layout.list_item_event_summarized;
         }
 
         return inflater.inflate(layoutId, parent, false);
@@ -701,37 +700,38 @@ public class SessionsFragment extends Fragment implements
             return;
         }
 
-        final String sessionId = mCursor.getString(SessionsQuery.SESSION_ID);
-        if (sessionId == null) {
+        final String eventId = mCursor.getString(EventsQuery.EVENT_ID);
+        if (eventId == null) {
             return;
         }
 
-        // first, read session info from cursor and put it in convenience variables
-        final String sessionTitle = mCursor.getString(SessionsQuery.TITLE);
-        final String speakerNames = mCursor.getString(SessionsQuery.SPEAKER_NAMES);
-        final String sessionAbstract = mCursor.getString(SessionsQuery.ABSTRACT);
-        final long sessionStart = mCursor.getLong(SessionsQuery.SESSION_START);
-        final long sessionEnd = mCursor.getLong(SessionsQuery.SESSION_END);
-        final String roomName = mCursor.getString(SessionsQuery.ROOM_NAME);
-        int sessionColor = mCursor.getInt(SessionsQuery.COLOR);
-        sessionColor = sessionColor == 0 ? getResources().getColor(R.color.default_session_color)
-                : sessionColor;
-        int darkSessionColor = 0;
-        final String snippet = mIsSearchCursor ? mCursor.getString(SessionsQuery.SNIPPET) : null;
+        // first, read event info from cursor and put it in convenience variables
+        final String eventTitle = mCursor.getString(EventsQuery.TITLE);
+        final String speakerNames = mCursor.getString(EventsQuery.SPEAKER_NAMES);
+        final String eventAbstract = mCursor.getString(EventsQuery.ABSTRACT);
+        final String[] eventDays = mCursor.getString(EventsQuery.EVENT_DAYS).split(",");
+        final long eventStart = Long.valueOf(eventDays[0]).longValue();
+        final long eventEnd = Long.valueOf(eventDays[eventDays.length/2]).longValue();
+        //final String roomName = mCursor.getString(EventsQuery.ROOM_NAME);
+        int eventColor = mCursor.getInt(EventsQuery.COLOR);
+        eventColor = eventColor == 0 ? getResources().getColor(R.color.default_event_color)
+                : eventColor;
+        int darkEventColor = 0;
+        final String snippet = mIsSearchCursor ? mCursor.getString(EventsQuery.SNIPPET) : null;
         final Spannable styledSnippet = mIsSearchCursor ? buildStyledSnippet(snippet) : null;
-        final boolean starred = mCursor.getInt(SessionsQuery.IN_MY_SCHEDULE) != 0;
-        final String[] tags = mCursor.getString(SessionsQuery.TAGS).split(",");
+        final boolean starred = mCursor.getInt(EventsQuery.IN_MY_SCHEDULE) != 0;
+        final String[] tags = mCursor.getString(EventsQuery.TAGS).split(",");
 
         // now let's compute a few pieces of information from the data, which we will use
         // later to decide what to render where
         final boolean hasLivestream = !TextUtils.isEmpty(mCursor.getString(
-                SessionsQuery.LIVESTREAM_URL));
+                EventsQuery.LIVESTREAM_URL));
         final long now = UIUtils.getCurrentTime(context);
-        final boolean happeningNow = now >= sessionStart && now <= sessionEnd;
+        final boolean happeningNow = now >= eventStart && now <= eventEnd;
 
-        // text that says "LIVE" if session is live, or empty if session is not live
+        // text that says "LIVE" if event is live, or empty if event is not live
         final String liveNowText = hasLivestream ? " " + UIUtils.getLiveBadgeText(context,
-                sessionStart, sessionEnd) : "";
+                eventStart, eventEnd) : "";
 
         // get reference to all the views in the layout we will need
         final TextView titleView = (TextView) view.findViewById(R.id.session_title);
@@ -740,18 +740,18 @@ public class SessionsFragment extends Fragment implements
         final TextView snippetView = (TextView) view.findViewById(R.id.session_snippet);
         final TextView abstractView = (TextView) view.findViewById(R.id.session_abstract);
         final TextView categoryView = (TextView) view.findViewById(R.id.session_category);
-        final View sessionTargetView = view.findViewById(R.id.session_target);
+        final View eventTargetView = view.findViewById(R.id.session_target);
 
-        if (sessionColor == 0) {
+        if (eventColor == 0) {
             // use default
-            sessionColor = mDefaultSessionColor;
+            eventColor = mDefaultEventColor;
         }
 
         if (mNoTrackBranding) {
-            sessionColor = getResources().getColor(R.color.no_track_branding_session_color);
+            eventColor = getResources().getColor(R.color.no_track_branding_session_color);
         }
 
-        darkSessionColor = UIUtils.scaleSessionColorToDefaultBG(sessionColor);
+        darkEventColor = UIUtils.scaleSessionColorToDefaultBG(eventColor);
 
         ImageView photoView = (ImageView) view.findViewById(R.id.session_photo_colored);
         if (photoView != null) {
@@ -769,45 +769,45 @@ public class SessionsFragment extends Fragment implements
                     ? new PorterDuffColorFilter(
                     getResources().getColor(R.color.no_track_branding_session_tile_overlay),
                     PorterDuff.Mode.SRC_ATOP)
-                    : UIUtils.makeSessionImageScrimColorFilter(darkSessionColor));
+                    : UIUtils.makeSessionImageScrimColorFilter(darkEventColor));
         } else {
             photoView = (ImageView) view.findViewById(R.id.session_photo);
         }
-        ViewCompat.setTransitionName(photoView, "photo_" + sessionId);
+        ViewCompat.setTransitionName(photoView, "photo_" + eventId);
 
         // when we load a photo, it will fade in from transparent so the
-        // background of the container must be the session color to avoid a white flash
+        // background of the container must be the event color to avoid a white flash
         ViewParent parent = photoView.getParent();
         if (parent != null && parent instanceof View) {
-            ((View) parent).setBackgroundColor(darkSessionColor);
+            ((View) parent).setBackgroundColor(darkEventColor);
         } else {
-            photoView.setBackgroundColor(darkSessionColor);
+            photoView.setBackgroundColor(darkEventColor);
         }
 
-        String photo = mCursor.getString(SessionsQuery.PHOTO_URL);
+        String photo = mCursor.getString(EventsQuery.PHOTO_URL);
         if (!TextUtils.isEmpty(photo)) {
             mImageLoader.loadImage(photo, photoView, true /*crop*/);
         } else {
-            // cleaning the (potentially) recycled photoView, in case this session has no photo:
+            // cleaning the (potentially) recycled photoView, in case this event has no photo:
             photoView.setImageDrawable(null);
         }
 
         // render title
-        titleView.setText(sessionTitle == null ? "?" : sessionTitle);
+        titleView.setText(eventTitle == null ? "?" : eventTitle);
 
         // render subtitle into either the subtitle view, or the short subtitle view, as available
         if (subtitleView != null) {
-            subtitleView.setText(UIUtils.formatSessionSubtitle(
-                    sessionStart, sessionEnd, roomName, mBuffer, context) + liveNowText);
+            subtitleView.setText(UIUtils.formatEventSubtitle(
+                    eventStart, eventEnd, mBuffer, context) + liveNowText);
         } else if (shortSubtitleView != null) {
-            shortSubtitleView.setText(UIUtils.formatSessionSubtitle(
-                    sessionStart, sessionEnd, roomName, mBuffer, context, true) + liveNowText);
+            shortSubtitleView.setText(UIUtils.formatEventSubtitle(
+                    eventStart, eventEnd, mBuffer, context, true) + liveNowText);
         }
 
         // render category
         if (categoryView != null) {
-            TagMetadata.Tag groupTag = mTagMetadata.getGroupTag(tags, Config.Tags.SESSION_GROUPING_TAG_CATEGORY);
-            if (groupTag != null && !Config.Tags.SESSIONS.equals(groupTag.getId())) {
+            TagMetadata.Tag groupTag = mTagMetadata.getGroupTag(tags, Config.Tags.EVENT_GROUPING_TAG_CATEGORY);
+            if (groupTag != null && !Config.Tags.EVENTS.equals(groupTag.getId())) {
                 categoryView.setText(groupTag.getName());
                 categoryView.setVisibility(View.VISIBLE);
             } else {
@@ -815,7 +815,7 @@ public class SessionsFragment extends Fragment implements
             }
         }
 
-        // if a snippet view is available, render the session snippet there.
+        // if a snippet view is available, render the event snippet there.
         if (snippetView != null) {
             if (mIsSearchCursor) {
                 // render the search snippet into the snippet view
@@ -826,8 +826,8 @@ public class SessionsFragment extends Fragment implements
                 if (!TextUtils.isEmpty(speakerNames)) {
                     mBuffer.append(speakerNames).append(". ");
                 }
-                if (!TextUtils.isEmpty(sessionAbstract)) {
-                    mBuffer.append(sessionAbstract);
+                if (!TextUtils.isEmpty(eventAbstract)) {
+                    mBuffer.append(eventAbstract);
                 }
                 snippetView.setText(mBuffer.toString());
             }
@@ -839,8 +839,8 @@ public class SessionsFragment extends Fragment implements
             if (!TextUtils.isEmpty(speakerNames)) {
                 mBuffer.append(speakerNames).append("\n\n");
             }
-            if (!TextUtils.isEmpty(sessionAbstract)) {
-                mBuffer.append(sessionAbstract);
+            if (!TextUtils.isEmpty(eventAbstract)) {
+                mBuffer.append(eventAbstract);
             }
             abstractView.setText(mBuffer.toString());
         }
@@ -855,29 +855,29 @@ public class SessionsFragment extends Fragment implements
             // this is the hero view, so we might want to show a message card
             final boolean cardShown = setupMessageCard(view);
 
-            // if this is the wide hero layout, show or hide the card or the session abstract
+            // if this is the wide hero layout, show or hide the card or the event abstract
             // view, as appropriate (they are mutually exclusive).
             final View cardContainer = view.findViewById(R.id.message_card_container_wide);
             final View abstractContainer = view.findViewById(R.id.session_abstract);
             if (cardContainer != null && abstractContainer != null) {
                 cardContainer.setVisibility(cardShown ? View.VISIBLE : View.GONE);
                 abstractContainer.setVisibility(cardShown ? View.GONE : View.VISIBLE);
-                abstractContainer.setBackgroundColor(darkSessionColor);
+                abstractContainer.setBackgroundColor(darkEventColor);
             }
         }
 
-        // if this session is live right now, display the "LIVE NOW" icon on top of it
+        // if this event is live right now, display the "LIVE NOW" icon on top of it
         View liveNowBadge = view.findViewById(R.id.live_now_badge);
         if (liveNowBadge != null) {
             liveNowBadge.setVisibility(happeningNow && hasLivestream ? View.VISIBLE : View.GONE);
         }
 
-        // if this view is clicked, open the session details view
+        // if this view is clicked, open the event details view
         final View finalPhotoView = photoView;
-        sessionTargetView.setOnClickListener(new View.OnClickListener() {
+        eventTargetView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mCallbacks.onSessionSelected(sessionId, finalPhotoView);
+                mCallbacks.onEventSelected(eventId, finalPhotoView);
             }
         });
 
@@ -963,7 +963,7 @@ public class SessionsFragment extends Fragment implements
                     @Override
                     public void run() {
                         if (CARD_ANSWER_YES.equals(tag)) {
-                            WiFiUtils.showWiFiDialog(SessionsFragment.this.getActivity());
+                            WiFiUtils.showWiFiDialog(EventsFragment.this.getActivity());
                         } else {
                             PrefUtils.markDeclinedWifiSetup(context);
                         }
@@ -994,7 +994,7 @@ public class SessionsFragment extends Fragment implements
                                     Uri.parse(Config.IO_EXTENDED_LINK));
                             startActivity(intent);
                         }
-                        PrefUtils.markDismissedIOExtendedCard(SessionsFragment.this.getActivity());
+                        PrefUtils.markDismissedIOExtendedCard(EventsFragment.this.getActivity());
                     }
                 }, CARD_DISMISS_ACTION_DELAY);
             }
@@ -1002,7 +1002,7 @@ public class SessionsFragment extends Fragment implements
         card.show();
     }
 
-    private void animateSessionAppear(final View view) {
+    private void animateEventAppear(final View view) {
     }
 
     private class Preloader extends ListPreloader<String> {
@@ -1044,7 +1044,7 @@ public class SessionsFragment extends Fragment implements
             if (mCursor != null) {
                 for (int i = dataStart; i < dataEnd; i++) {
                     if (mCursor.moveToPosition(i)) {
-                        urls.add(mCursor.getString(SessionsQuery.PHOTO_URL));
+                        urls.add(mCursor.getString(EventsQuery.PHOTO_URL));
                     }
                 }
             }
@@ -1058,61 +1058,52 @@ public class SessionsFragment extends Fragment implements
     }
 
     /**
-     * {@link com.ncode.android.apps.schedo.provider.ScheduleContract.Sessions}
+     * {@link com.ncode.android.apps.schedo.provider.ScheduleContract.Events}
      * query parameters.
      */
-    private interface SessionsQuery {
+    private interface EventsQuery {
         int NORMAL_TOKEN = 0x1;
         int SEARCH_TOKEN = 0x3;
 
         String[] NORMAL_PROJECTION = {
                 BaseColumns._ID,
-                ScheduleContract.Sessions.SESSION_ID,
-                ScheduleContract.Sessions.SESSION_TITLE,
-                ScheduleContract.Sessions.SESSION_IN_MY_SCHEDULE,
-                ScheduleContract.Sessions.SESSION_START,
-                ScheduleContract.Sessions.SESSION_END,
-                ScheduleContract.Rooms.ROOM_NAME,
-                ScheduleContract.Rooms.ROOM_ID,
-                ScheduleContract.Sessions.SESSION_HASHTAG,
-                ScheduleContract.Sessions.SESSION_URL,
-                ScheduleContract.Sessions.SESSION_LIVESTREAM_URL,
-                ScheduleContract.Sessions.SESSION_TAGS,
-                ScheduleContract.Sessions.SESSION_SPEAKER_NAMES,
-                ScheduleContract.Sessions.SESSION_ABSTRACT,
-                ScheduleContract.Sessions.SESSION_COLOR,
-                ScheduleContract.Sessions.SESSION_PHOTO_URL,
+                ScheduleContract.Events.EVENT_ID,
+                ScheduleContract.Events.EVENT_TITLE,
+                ScheduleContract.Events.EVENT_IN_MY_SCHEDULE,
+                ScheduleContract.Events.EVENT_DAYS,
+                ScheduleContract.Events.EVENT_HASHTAG,
+                ScheduleContract.Events.EVENT_URL,
+                ScheduleContract.Events.EVENT_LIVESTREAM_URL,
+                ScheduleContract.Events.EVENT_TAGS,
+                ScheduleContract.Events.EVENT_SPEAKER_NAMES,
+                ScheduleContract.Events.EVENT_ABSTRACT,
+                ScheduleContract.Events.EVENT_COLOR,
+                ScheduleContract.Events.EVENT_PHOTO_URL,
         };
 
         String[] SEARCH_PROJECTION = {
                 BaseColumns._ID,
-                ScheduleContract.Sessions.SESSION_ID,
-                ScheduleContract.Sessions.SESSION_TITLE,
-                ScheduleContract.Sessions.SESSION_IN_MY_SCHEDULE,
-                ScheduleContract.Sessions.SESSION_START,
-                ScheduleContract.Sessions.SESSION_END,
-                ScheduleContract.Rooms.ROOM_NAME,
-                ScheduleContract.Rooms.ROOM_ID,
-                ScheduleContract.Sessions.SESSION_HASHTAG,
-                ScheduleContract.Sessions.SESSION_URL,
-                ScheduleContract.Sessions.SESSION_LIVESTREAM_URL,
-                ScheduleContract.Sessions.SESSION_TAGS,
-                ScheduleContract.Sessions.SESSION_SPEAKER_NAMES,
-                ScheduleContract.Sessions.SESSION_ABSTRACT,
-                ScheduleContract.Sessions.SESSION_COLOR,
-                ScheduleContract.Sessions.SESSION_PHOTO_URL,
-                ScheduleContract.Sessions.SEARCH_SNIPPET,
+                ScheduleContract.Events.EVENT_ID,
+                ScheduleContract.Events.EVENT_TITLE,
+                ScheduleContract.Events.EVENT_IN_MY_SCHEDULE,
+                ScheduleContract.Events.EVENT_DAYS,
+                ScheduleContract.Events.EVENT_HASHTAG,
+                ScheduleContract.Events.EVENT_URL,
+                ScheduleContract.Events.EVENT_LIVESTREAM_URL,
+                ScheduleContract.Events.EVENT_TAGS,
+                ScheduleContract.Events.EVENT_SPEAKER_NAMES,
+                ScheduleContract.Events.EVENT_ABSTRACT,
+                ScheduleContract.Events.EVENT_COLOR,
+                ScheduleContract.Events.EVENT_PHOTO_URL,
+                ScheduleContract.Events.SEARCH_SNIPPET,
         };
 
 
         int _ID = 0;
-        int SESSION_ID = 1;
+        int EVENT_ID = 1;
         int TITLE = 2;
         int IN_MY_SCHEDULE = 3;
-        int SESSION_START = 4;
-        int SESSION_END = 5;
-        int ROOM_NAME = 6;
-        int ROOM_ID = 7;
+        int EVENT_DAYS = 4;
         int HASHTAGS = 8;
         int URL = 9;
         int LIVESTREAM_URL = 10;

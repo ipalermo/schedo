@@ -759,4 +759,5 @@
     <string name="pref_nearby_title">启用PhysicalWeb实验</string>
     <string name="title_experts_directory">专家</string>
     <string name="title_people_ive_met">我会见过的人</string>
+    <string name="all_events">所有事件</string>
 </resources>

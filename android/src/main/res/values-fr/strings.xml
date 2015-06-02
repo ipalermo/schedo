@@ -767,4 +767,5 @@
     <string name="pref_nearby_title">Activer l\'expérience PhysicalWeb</string>
     <string name="title_experts_directory">Experts</string>
     <string name="title_people_ive_met">Personnes rencontrées</string>
+    <string name="all_events">tous les événements</string>
 </resources>

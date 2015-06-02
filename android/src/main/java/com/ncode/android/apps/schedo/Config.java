@@ -34,8 +34,11 @@ public class Config {
     public static final String DOGFOOD_BUILD_WARNING_TITLE = "Test build";
     public static final String DOGFOOD_BUILD_WARNING_TEXT = "This is a test build.";
 
+    //Master manifest file name
+    public static final String MASTER_MANIFEST_FILE = "mastermanifest_v1.0.0_qa.json";
+
     // Public events manifest URL
-    public static final String PROD_MASTER_MANIFEST_URL = "http://storage.googleapis.com/standardbucket/mastermanifest_v1.0.json";
+    public static final String PROD_MASTER_MANIFEST_URL = "http://storage.googleapis.com/standardbucket/"+MASTER_MANIFEST_FILE;
 
     // Public data manifest URL
     public static final String PROD_STANDARD_BUCKET_URL = "http://storage.googleapis.com/standardbucket/";//schedoconf/manifest_v1.1__qa_.json";//"https://www.googleapis.com/storage/v1/b/standardbucket/o/manifest_v1__qa_.json";
@@ -192,10 +195,13 @@ public class Config {
     public static final String PLAY_STORE_URL_PREFIX
             = "https://play.google.com/store/apps/details?id=";
 
-    // Known session tags that induce special behaviors
+    // Known session/event tags that induce special behaviors
     public interface Tags {
         // tag that indicates a session is a live session
         public static final String SESSIONS = "TYPE_SESSIONS";
+
+        // tag that indicates an event is a live event
+        public static final String EVENTS = "TYPE_EVENTS";
 
         // the tag category that we use to group events together when displaying them
         public static final String EVENT_GROUPING_TAG_CATEGORY = "TYPE";

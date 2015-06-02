@@ -17,6 +17,12 @@
 package com.ncode.android.apps.schedo.ui;
 
 import android.app.Activity;
+import android.app.LoaderManager;
+import android.content.CursorLoader;
+import android.content.Intent;
+import android.content.Loader;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.app.ListFragment;
 import android.view.LayoutInflater;
@@ -24,14 +30,77 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.ncode.android.apps.schedo.R;
+import com.ncode.android.apps.schedo.model.MyScheduleMetadata;
+import com.ncode.android.apps.schedo.model.TagMetadata;
+import com.ncode.android.apps.schedo.provider.ScheduleContract;
+import com.ncode.android.apps.schedo.util.UIUtils;
+
+import static com.ncode.android.apps.schedo.util.LogUtils.LOGD;
+import static com.ncode.android.apps.schedo.util.LogUtils.makeLogTag;
 
 /**
  * A list fragment that shows items from MySchedule.
  * To use, call setListAdapter(), passing it an instance of your MyScheduleAdapter.
  */
-public class MyScheduleFragment extends ListFragment {
+public class MyScheduleFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
     private String mContentDescription = null;
     private View mRoot = null;
+    private static final String TAG = makeLogTag(MyScheduleFragment.class);
+    private MyScheduleCallbacks mCallbacks = sDummyCallbacks;
+    private static final int MYSCHEDULE_METADATA_TOKEN = 0x4;
+    private MyScheduleMetadata mScheduleMetadata = null;
+
+    public interface MyScheduleCallbacks {
+        public void onEventSchedSelected(String eventId, View clickedView);
+        public void onEventSchedMetadataLoaded(MyScheduleMetadata metadata);
+    }
+
+    private static MyScheduleCallbacks sDummyCallbacks = new MyScheduleCallbacks() {
+        @Override
+        public void onEventSchedSelected(String eventId, View clickedView) {}
+
+        @Override
+        public void onEventSchedMetadataLoaded(MyScheduleMetadata metadata) {}
+    };
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle data) {
+        LOGD(TAG, "onCreateLoader, id=" + id + ", data=" + data);
+        final Intent intent = BaseActivity.fragmentArgumentsToIntent(data);
+        Uri eventsUri = intent.getData();
+
+        Loader<Cursor> loader = null;
+        if (id == MYSCHEDULE_METADATA_TOKEN) {
+            LOGD(TAG, "Creating metadata loader");
+            loader = TagMetadata.createCursorLoader(getActivity());
+        }
+        return loader;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        if (getActivity() == null) {
+            return;
+        }
+
+        int token = loader.getId();
+        LOGD(TAG, "Loader finished: "  + (token == MYSCHEDULE_METADATA_TOKEN ? "tags" :
+                        "unknown"));
+        if (token == MYSCHEDULE_METADATA_TOKEN) {
+            mScheduleMetadata = new MyScheduleMetadata(cursor);
+            cursor.close();
+            //updateCollectionView();
+            mCallbacks.onEventSchedMetadataLoaded(mScheduleMetadata);
+        } else {
+            LOGD(TAG, "Query complete, Not Actionable: " + token);
+            cursor.close();
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
+    }
 
     public interface Listener {
         public void onFragmentViewCreated(ListFragment fragment);

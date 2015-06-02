@@ -68,6 +68,8 @@
     <color name="no_track_branding_session_tile_overlay">#8333</color>
     <color name="no_track_branding_session_color">#333</color>
 
+    <color name="default_event_color">@color/theme_primary</color>
+
     <color name="nearby_header_color">#00c</color>
     <color name="nearby_url_color">#0a0</color>
     <color name="nearby_description_color">@color/body_text_2</color>

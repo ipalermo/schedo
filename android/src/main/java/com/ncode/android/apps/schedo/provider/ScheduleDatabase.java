@@ -80,7 +80,20 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
                 + "LEFT OUTER JOIN myschedule ON sessions.session_id=myschedule.session_id "
                 + "AND myschedule.account_name=? ";
 
+        String EVENTS_JOIN_SESSIONS_MYSCHEDULE = "events "
+                + "LEFT OUTER JOIN sessions ON events.event_id=sessions.event_id "
+                + "LEFT OUTER JOIN myschedule ON sessions.session_id=myschedule.session_id "
+                + "AND myschedule.account_name=? ";
+
+
         String SESSIONS_JOIN_ROOMS_TAGS = "sessions "
+                + "LEFT OUTER JOIN myschedule ON sessions.session_id=myschedule.session_id "
+                + "AND myschedule.account_name=? "
+                + "LEFT OUTER JOIN rooms ON sessions.room_id=rooms.room_id "
+                + "LEFT OUTER JOIN sessions_tags ON sessions.session_id=sessions_tags.session_id";
+
+        String EVENTS_JOIN_SESSIONS_ROOMS_TAGS = "events "
+                + "LEFT OUTER JOIN sessions ON events.event_id=sessions.event_id "
                 + "LEFT OUTER JOIN myschedule ON sessions.session_id=myschedule.session_id "
                 + "AND myschedule.account_name=? "
                 + "LEFT OUTER JOIN rooms ON sessions.room_id=rooms.room_id "
@@ -88,7 +101,7 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
 
         String SESSIONS_JOIN_ROOMS_TAGS_FEEDBACK_MYSCHEDULE = "sessions "
                 + "LEFT OUTER JOIN myschedule ON sessions.session_id=myschedule.session_id "
-                + "AND myschedule.account_name=? "
+                + "AND myschedule.account_name=? AND sessions.event_id=? " //check if this is OK
                 + "LEFT OUTER JOIN rooms ON sessions.room_id=rooms.room_id "
                 + "LEFT OUTER JOIN sessions_tags ON sessions.session_id=sessions_tags.session_id "
                 + "LEFT OUTER JOIN feedback ON sessions.session_id=feedback.session_id";
@@ -187,6 +200,7 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
         String TAG_ID = "REFERENCES " + Tables.TAGS + "(" + Tags.TAG_ID + ")";
         String ROOM_ID = "REFERENCES " + Tables.ROOMS + "(" + Rooms.ROOM_ID + ")";
         String SESSION_ID = "REFERENCES " + Tables.SESSIONS + "(" + Sessions.SESSION_ID + ")";
+        String VIDEO_ID = "REFERENCES " + Tables.VIDEOS + "(" + Videos.VIDEO_ID + ")";
         String SPEAKER_ID = "REFERENCES " + Tables.SPEAKERS + "(" + Speakers.SPEAKER_ID + ")";
         String EVENT_ID = "REFERENCES " + Tables.EVENTS + "(" + Events.EVENT_ID + ")";
     }
@@ -308,6 +322,13 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
                 + MySchedule.MY_SCHEDULE_IN_SCHEDULE + " INTEGER NOT NULL DEFAULT 1,"
                 + "UNIQUE (" + MySchedule.SESSION_ID + ","
                         + MySchedule.MY_SCHEDULE_ACCOUNT_NAME + ") ON CONFLICT REPLACE)");
+
+        db.execSQL("CREATE TABLE " + Tables.EVENTS_VIDEOS + " ("
+                + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + EventsVideos.EVENT_ID + " TEXT NOT NULL " + References.EVENT_ID + ","
+                + EventsVideos.VIDEO_ID + " TEXT NOT NULL " + References.VIDEO_ID + ","
+                + "UNIQUE (" + EventsVideos.EVENT_ID + ","
+                + EventsVideos.VIDEO_ID + ") ON CONFLICT REPLACE)");
 
         db.execSQL("CREATE TABLE " + Tables.SESSIONS_SPEAKERS + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -559,7 +580,7 @@ public class ScheduleDatabase extends SQLiteOpenHelper {
 
         if (dataInvalidated) {
             LOGD(TAG, "Data invalidated; resetting our data timestamp.");
-            ConferenceDataHandler.resetDataTimestamp(mContext);
+            ConferenceDataHandler.resetManifestsDataTimestamp(mContext);
             if (account != null) {
                 LOGI(TAG, "DB upgrade complete. Requesting resync.");
                 SyncHelper.requestManualSync(account);

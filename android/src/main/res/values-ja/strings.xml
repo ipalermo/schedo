@@ -753,4 +753,5 @@
     <string name="pref_nearby_title">PhysicalWeb 実験を有効にする</string>
     <string name="title_experts_directory">Expert</string>
     <string name="title_people_ive_met">連絡先リスト</string>
+    <string name="all_events">すべてのイベント</string>
 </resources>

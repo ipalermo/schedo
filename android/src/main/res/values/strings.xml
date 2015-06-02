@@ -71,9 +71,13 @@
     displayed session to the user's schedule. -->
     <string name="add_to_schedule_desc">Button to add activity to your schedule</string>
 
+    <!-- Shown in a drop-down list on the main screen, indicating that all conference events
+    are being displayed. -->
+    <string name="all_events">All Events</string>
+
     <!-- Shown in a drop-down list on the main screen, indicating that all conference sessions
     are being displayed. -->
-    <string name="all_sessions">All Activities</string>
+    <string name="all_sessions">All Sessions</string>
 
     <!-- Shown in a drop-down list on the main screen, indicating that all conference themes
     are being displayed. Themes are major categories for sessions (the themes are Design,
@@ -237,6 +241,8 @@
     <!-- Shown as a header on a list of sessions to indicate that the sessions that appear on that
     group have already ended. -->
     <string name="ended_sessions">Ended activities</string>
+
+    <string name="ended_events">Ended events</string>
 
     <!-- Text on a drop-down list that allows the user to view Google Developer Experts from all cities (this is a filter). -->
     <string name="experts_directory_all_cities">All cities</string>
@@ -434,9 +440,17 @@
     session -->
     <string name="no_matching_sessions">No matching sessions.</string>
 
+    <!-- Message shown in the event explorer when the user applies a filter that results no
+    event -->
+    <string name="no_matching_events">No matching events.</string>
+
     <!-- Message shown in the session explorer when the user selects a time slot that has no
     session  -->
     <string name="no_matching_sessions_in_interval">No sessions available in this time slot.</string>
+
+    <!-- Message shown in the event explorer when the user selects a time slot that has no
+    event  -->
+    <string name="no_matching_events_in_interval">No events available in this time slot.</string>
 
     <!-- Message shown in the video library when the user applies a filter that results no video -->
     <string name="no_matching_videos">No matching videos.</string>
@@ -651,6 +665,9 @@
 
     <!-- Text indicating the session has ended -->
     <string name="session_finished">Ended</string>
+
+    <!-- Text indicating the event has ended -->
+    <string name="event_finished">Ended</string>
 
     <!-- Card text asking the user to provide session feedback -->
     <string name="session_give_feedback_message">How was this session? Would you like to send feedback?</string>

@@ -1033,10 +1033,10 @@ public abstract class BaseActivity extends ActionBarActivity implements
 
                     // Apply the data we read to the database with the help of the ConferenceDataHandler
                     ConferenceDataHandler dataHandler = new ConferenceDataHandler(appContext);
-                    dataHandler.applyConferenceData(new String[]{bootstrapJson},
+                    dataHandler.applyConferenceData(Config.MASTER_MANIFEST_FILE,new String[]{bootstrapJson},
                             Config.BOOTSTRAP_DATA_TIMESTAMP, false);
                     SyncHelper.performPostSyncChores(appContext);
-                    LOGI(TAG, "End of bootstrap -- successful. Marking boostrap as done.");
+                    LOGI(TAG, "End of bootstrap -- successful. Marking bootstrap as done.");
                     PrefUtils.markSyncSucceededNow(appContext);
                     PrefUtils.markDataBootstrapDone(appContext);
                     getContentResolver().notifyChange(Uri.parse(ScheduleContract.CONTENT_AUTHORITY),

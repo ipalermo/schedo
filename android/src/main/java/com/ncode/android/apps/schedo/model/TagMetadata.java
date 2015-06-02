@@ -69,13 +69,13 @@ public class TagMetadata {
                 Collections.unmodifiableList(mTagsInCategory.get(category)) : null;
     }
 
-    /** Given the set of tags on a session, returns its group label. */
-    public Tag getSessionGroupTag(String[] sessionTags) {
+    /** Given the set of tags on a session/event, returns its group label. */
+    public Tag getGroupTag(String[] sessionTags, String groupingTagCategory) {
         int bestOrder = Integer.MAX_VALUE;
         Tag bestTag = null;
         for (String tagId : sessionTags) {
             Tag tag = getTag(tagId);
-            if (tag != null && Config.Tags.SESSION_GROUPING_TAG_CATEGORY.equals(tag.getCategory()) &&
+            if (tag != null && groupingTagCategory.equals(tag.getCategory()) &&
                         tag.getOrderInCategory() < bestOrder) {
                 bestOrder = tag.getOrderInCategory();
                 bestTag = tag;

@@ -25,6 +25,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.ContentObserver;
+import android.graphics.Paint;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.OvalShape;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -33,19 +36,27 @@ import android.preference.PreferenceManager;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
 import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.ScrollView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.ncode.android.apps.schedo.Config;
 import com.ncode.android.apps.schedo.R;
+import com.ncode.android.apps.schedo.model.MyScheduleMetadata;
 import com.ncode.android.apps.schedo.model.ScheduleHelper;
 import com.ncode.android.apps.schedo.provider.ScheduleContract;
 import com.ncode.android.apps.schedo.ui.widget.MyScheduleView;
@@ -60,9 +71,11 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 
 import static com.ncode.android.apps.schedo.util.LogUtils.LOGD;
+import static com.ncode.android.apps.schedo.util.LogUtils.LOGE;
+import static com.ncode.android.apps.schedo.util.LogUtils.LOGW;
 import static com.ncode.android.apps.schedo.util.LogUtils.makeLogTag;
 
-public class MyScheduleActivity extends BaseActivity implements MyScheduleFragment.Listener {
+public class MyScheduleActivity extends BaseActivity implements MyScheduleFragment.Listener, MyScheduleFragment.MyScheduleCallbacks {
 
     // Interval that a timer will redraw the UI when in conference day, so that time sensitive
     // widgets, like the "Now" and "Ended" indicators can be properly updated.
@@ -115,10 +128,154 @@ public class MyScheduleActivity extends BaseActivity implements MyScheduleFragme
     public static final String EXTRA_DIALOG_URL
             = "com.ncode.android.apps.schedo.EXTRA_DIALOG_URL";
 
+    private static final String STATE_FILTER_0 = "STATE_FILTER_0";
+    public static final String EXTRA_FILTER_SCHED = "com.ncode.android.apps.schedo.extra.FILTER_SCHED";
+
+    private MyScheduleMetadata mSchedMetadata = null;
+    private boolean mSpinnerConfigured = false;
+
+    // filter event schedules that are currently selected
+    private String mFilterScheds = "";
+
+    // filter scheds that we have to restore (as a result of Activity recreation)
+    private String mFilterSchedsToRestore = null;
+    private int mHeaderColor = 0; // 0 means not customized
+
+    private MyScheduleSpinnerAdapter mTopLevelSpinnerAdapter = new MyScheduleSpinnerAdapter(true);
+
     private boolean mShowedAnnouncementDialog = false;
 
     public MyScheduleActivity() {
         mDataHelper = new ScheduleHelper(this);
+    }
+
+    @Override
+    public void onEventSchedSelected(String eventId, View clickedView) {
+        ;
+    }
+
+    @Override
+    public void onEventSchedMetadataLoaded(MyScheduleMetadata metadata) {
+        mSchedMetadata = metadata;
+        if (mSpinnerConfigured) {
+            // we need to reconfigure the spinner, so we need to remember our current filter
+            // and try to restore it after we set up the spinner again.
+            mSpinnerConfigured = false;
+            mFilterSchedsToRestore = mFilterScheds;
+        }
+        trySetUpActionBarSpinner();
+    }
+
+    private void trySetUpActionBarSpinner() {
+        Toolbar toolbar = getActionBarToolbar();
+        if (mSpinnerConfigured || mSchedMetadata == null || toolbar == null) {
+            // already done it, or not ready yet, or don't need to do
+            LOGD(TAG, "Not configuring Action Bar spinner.");
+            return;
+        }
+
+        LOGD(TAG, "Configuring Action Bar spinner.");
+        mSpinnerConfigured = true;
+        mTopLevelSpinnerAdapter.clear();
+        mTopLevelSpinnerAdapter.addItem("", getString(R.string.all_events), false, 0);
+
+        int itemToSelect = -1;
+
+        Collection<MyScheduleMetadata.MySchedEvent> events = mSchedMetadata.getMyScheduleEvents();
+        if (events != null) {
+            //mTopLevelSpinnerAdapter.addHeader(categoryTitle);
+            for (MyScheduleMetadata.MySchedEvent e : events) {
+                LOGD(TAG, "Adding item to spinner: " + e.getId() + " --> " + e.getTitle());
+                int eventColor = e.getColor()>0 ? e.getColor() : 0;
+                mTopLevelSpinnerAdapter.addItem(e.getId(), e.getTitle(), true, eventColor);
+                if (!TextUtils.isEmpty(mFilterSchedsToRestore) && e.getId().equals(mFilterSchedsToRestore)) {
+                    mFilterSchedsToRestore = null;
+                    itemToSelect = mTopLevelSpinnerAdapter.getCount() - 1;
+                }
+            }
+        } else {
+            LOGW(TAG, "No events scheduled");
+        }
+
+        mFilterSchedsToRestore = null;
+
+        View spinnerContainer = LayoutInflater.from(this).inflate(R.layout.actionbar_spinner,
+                toolbar, false);
+        ActionBar.LayoutParams lp = new ActionBar.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        toolbar.addView(spinnerContainer, lp);
+
+        Spinner spinner = (Spinner) spinnerContainer.findViewById(R.id.actionbar_spinner);
+        spinner.setAdapter(mTopLevelSpinnerAdapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> spinner, View view, int position, long itemId) {
+                onTopLevelEventSelected(mTopLevelSpinnerAdapter.getTag(position));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+        if (itemToSelect >= 0) {
+            LOGD(TAG, "Restoring item selection to primary spinner: " + itemToSelect);
+            spinner.setSelection(itemToSelect);
+        }
+
+        updateHeaderColor();
+        //showSecondaryFilters();
+    }
+
+    private void onTopLevelEventSelected(String eventId) {
+        MyScheduleFragment frag = (MyScheduleFragment) getFragmentManager().findFragmentById(
+                R.layout.fragment_my_schedule);
+        if (frag == null) {
+            LOGE(TAG, "Schedule fragment not found!");
+            return;
+        }
+
+        if (eventId.equals(mFilterScheds)) {
+            // nothing to do
+            return;
+        }
+
+        /* [ANALYTICS:EVENT]
+         * TRIGGER:   Select a top-level filter on the Schedule screen.
+         * CATEGORY:  'My schedule'
+         * ACTION:    'topfilter'
+         * LABEL:     The selected event.
+         * [/ANALYTICS]
+         */
+        AnalyticsManager.sendEvent(SCREEN_LABEL, "topfilter", eventId);
+        mFilterScheds = eventId;
+
+        //showSecondaryFilters();
+        updateHeaderColor();
+        reloadFromFilters(eventId);
+    }
+
+
+    private void updateHeaderColor() {
+        mHeaderColor = 0;
+
+        if (mFilterScheds != null) {
+            MyScheduleMetadata.MySchedEvent eventObj = mSchedMetadata.getSchedule(mFilterScheds);
+            if (eventObj != null )
+                mHeaderColor = eventObj.getColor();
+        }
+
+        findViewById(R.id.headerbar).setBackgroundColor(
+                mHeaderColor == 0
+                        ? getResources().getColor(R.color.theme_primary)
+                        : mHeaderColor);
+        setNormalStatusBarColor(
+                mHeaderColor == 0
+                        ? getThemedStatusBarColor()
+                        : UIUtils.scaleColor(mHeaderColor, 0.8f, false));
+    }
+
+    private void reloadFromFilters(String eventId) {
+        updateData();
     }
 
     @Override
@@ -206,6 +363,14 @@ public class MyScheduleActivity extends BaseActivity implements MyScheduleFragme
             });
         }
 
+        if (savedInstanceState != null) {
+            mFilterSchedsToRestore = mFilterScheds = savedInstanceState.getString(STATE_FILTER_0);
+        } else if (getIntent() != null && getIntent().hasExtra(EXTRA_FILTER_SCHED)) {
+            mFilterSchedsToRestore = getIntent().getStringExtra(EXTRA_FILTER_SCHED);
+        }
+
+        getActionBarToolbar().setTitle(null);
+
         overridePendingTransition(0, 0);
         addDataObservers();
     }
@@ -226,6 +391,12 @@ public class MyScheduleActivity extends BaseActivity implements MyScheduleFragme
         setProgressBarTopWhenActionBarShown((int)
                 TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2,
                         getResources().getDisplayMetrics()));
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(STATE_FILTER_0, mFilterScheds);
     }
 
     @Override
@@ -365,6 +536,7 @@ public class MyScheduleActivity extends BaseActivity implements MyScheduleFragme
     }
 
     protected void updateData() {
+        // TODO: use String eventId
         for (int i = 0; i < Config.CONFERENCE_DAYS.length; i++) {
             mDataHelper.getScheduleDataAsync(mScheduleAdapters[i],
                     Config.CONFERENCE_DAYS[i][0], Config.CONFERENCE_DAYS[i][1]);
@@ -531,6 +703,165 @@ public class MyScheduleActivity extends BaseActivity implements MyScheduleFragme
                     this.scheduleNextRun();
                 }
             }
+        }
+    }
+
+    private class MyScheduleSpinnerItem {
+        boolean isHeader;
+        String tag, title;
+        int color;
+        boolean indented;
+
+        MyScheduleSpinnerItem(boolean isHeader, String tag, String title, boolean indented, int color) {
+            this.isHeader = isHeader;
+            this.tag = tag;
+            this.title = title;
+            this.indented = indented;
+            this.color = color;
+        }
+    }
+
+    /** Adapter that provides views for our top-level Action Bar spinner. */
+    private class MyScheduleSpinnerAdapter extends BaseAdapter {
+        private int mDotSize;
+        private boolean mTopLevel;
+
+        private MyScheduleSpinnerAdapter(boolean topLevel) {
+            this.mTopLevel = topLevel;
+        }
+
+        // pairs of (tag, title)
+        private ArrayList<MyScheduleSpinnerItem> mItems = new ArrayList<MyScheduleSpinnerItem>();
+
+        public void clear() {
+            mItems.clear();
+        }
+
+        public void addItem(String tag, String title, boolean indented, int color) {
+            mItems.add(new MyScheduleSpinnerItem(false, tag, title, indented, color));
+        }
+
+        public void addHeader(String title) {
+            mItems.add(new MyScheduleSpinnerItem(true, "", title, false, 0));
+        }
+
+        @Override
+        public int getCount() {
+            return mItems.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return mItems.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        private boolean isHeader(int position) {
+            return position >= 0 && position < mItems.size()
+                    && mItems.get(position).isHeader;
+        }
+
+        @Override
+        public View getDropDownView(int position, View view, ViewGroup parent) {
+            if (view == null || !view.getTag().toString().equals("DROPDOWN")) {
+                view = getLayoutInflater().inflate(R.layout.explore_spinner_item_dropdown,
+                        parent, false);
+                view.setTag("DROPDOWN");
+            }
+
+            TextView headerTextView = (TextView) view.findViewById(R.id.header_text);
+            View dividerView = view.findViewById(R.id.divider_view);
+            TextView normalTextView = (TextView) view.findViewById(android.R.id.text1);
+
+            if (isHeader(position)) {
+                headerTextView.setText(getTitle(position));
+                headerTextView.setVisibility(View.VISIBLE);
+                normalTextView.setVisibility(View.GONE);
+                dividerView.setVisibility(View.VISIBLE);
+            } else {
+                headerTextView.setVisibility(View.GONE);
+                normalTextView.setVisibility(View.VISIBLE);
+                dividerView.setVisibility(View.GONE);
+
+                setUpNormalDropdownView(position, normalTextView);
+            }
+
+            return view;
+        }
+
+        @Override
+        public View getView(int position, View view, ViewGroup parent) {
+            if (view == null || !view.getTag().toString().equals("NON_DROPDOWN")) {
+                view = getLayoutInflater().inflate(mTopLevel
+                                ? R.layout.explore_spinner_item_actionbar
+                                : R.layout.explore_spinner_item,
+                        parent, false);
+                view.setTag("NON_DROPDOWN");
+            }
+            TextView textView = (TextView) view.findViewById(android.R.id.text1);
+            textView.setText(getTitle(position));
+            return view;
+        }
+
+        private String getTitle(int position) {
+            return position >= 0 && position < mItems.size() ? mItems.get(position).title : "";
+        }
+
+        private int getColor(int position) {
+            return position >= 0 && position < mItems.size() ? mItems.get(position).color : 0;
+        }
+
+        private String getTag(int position) {
+            return position >= 0 && position < mItems.size() ? mItems.get(position).tag : "";
+        }
+
+        private void setUpNormalDropdownView(int position, TextView textView) {
+            textView.setText(getTitle(position));
+            ShapeDrawable colorDrawable = (ShapeDrawable) textView.getCompoundDrawables()[2];
+            int color = getColor(position);
+            if (color == 0) {
+                if (colorDrawable != null) {
+                    textView.setCompoundDrawables(null, null, null, null);
+                }
+            } else {
+                if (mDotSize == 0) {
+                    mDotSize = getResources().getDimensionPixelSize(
+                            R.dimen.tag_color_dot_size);
+                }
+                if (colorDrawable == null) {
+                    colorDrawable = new ShapeDrawable(new OvalShape());
+                    colorDrawable.setIntrinsicWidth(mDotSize);
+                    colorDrawable.setIntrinsicHeight(mDotSize);
+                    colorDrawable.getPaint().setStyle(Paint.Style.FILL);
+                    textView.setCompoundDrawablesWithIntrinsicBounds(null, null, colorDrawable, null);
+                }
+                colorDrawable.getPaint().setColor(color);
+            }
+
+        }
+
+        @Override
+        public boolean isEnabled(int position) {
+            return !isHeader(position);
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            return 0;
+        }
+
+        @Override
+        public int getViewTypeCount() {
+            return 1;
+        }
+
+        @Override
+        public boolean areAllItemsEnabled() {
+            return false;
         }
     }
 

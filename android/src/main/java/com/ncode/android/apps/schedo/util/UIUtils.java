@@ -112,9 +112,35 @@ public class UIUtils {
     private static SimpleDateFormat sDayOfWeekFormat = new SimpleDateFormat("E");
     private static DateFormat sShortTimeFormat = DateFormat.getTimeInstance(DateFormat.SHORT);
 
+    public static String formatEventSubtitle(long eventStart, long eventEnd, StringBuilder recycle, Context context) {
+        return formatEventSubtitle(eventStart, eventEnd, recycle, context, false);
+    }
+
     public static String formatSessionSubtitle(long intervalStart, long intervalEnd, String roomName, StringBuilder recycle,
             Context context) {
         return formatSessionSubtitle(intervalStart, intervalEnd, roomName, recycle, context, false);
+    }
+
+    public static String formatEventSubtitle(long eventStart, long eventEnd, StringBuilder recycle,
+                                               Context context, boolean shortFormat) {
+
+        // Determine if the event is in the past
+        long currentTimeMillis = UIUtils.getCurrentTime(context);
+        boolean eventEnded = currentTimeMillis > eventEnd;
+        if (eventEnded) {
+            return context.getString(R.string.event_finished);
+        }
+
+        if (shortFormat) {
+            Date intervalStartDate = new Date(eventStart);
+            sDayOfWeekFormat.setTimeZone(PrefUtils.getDisplayTimeZone(context));
+            sShortTimeFormat.setTimeZone(PrefUtils.getDisplayTimeZone(context));
+            return sDayOfWeekFormat.format(intervalStartDate) + " "
+                    + sShortTimeFormat.format(intervalStartDate);
+        } else {
+            return context.getString(R.string.session_subtitle,
+                    formatIntervalTimeString(eventStart, eventEnd, recycle, context));
+        }
     }
 
     /**
@@ -339,9 +365,12 @@ public class UIUtils {
         }
     }
 
+    public static boolean shouldShowLiveEventsOnly(final Context context) {
+        return PrefUtils.isOnlyRemoteAttendee(context);
+    }
+
     public static boolean shouldShowLiveSessionsOnly(final Context context) {
-        return !PrefUtils.isAttendeeAtVenue(context)
-                && getCurrentTime(context) < Config.CONFERENCE_END_MILLIS;
+        return !PrefUtils.isAttendeeAtVenue(context);
     }
 
     /**
@@ -452,7 +481,7 @@ public class UIUtils {
     }
 
     public static int setColorAlpha(int color, float alpha) {
-        int alpha_int = Math.min(Math.max((int)(alpha * 255.0f), 0), 255);
+        int alpha_int = Math.min(Math.max((int) (alpha * 255.0f), 0), 255);
         return Color.argb(alpha_int, Color.red(color), Color.green(color), Color.blue(color));
     }
 

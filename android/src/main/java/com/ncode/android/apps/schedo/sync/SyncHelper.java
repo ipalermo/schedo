@@ -46,7 +46,7 @@ public class SyncHelper {
     private Context mContext;
     private ConferenceDataHandler mConferenceDataHandler;
     private RemoteConferenceDataFetcher mRemoteDataFetcher;
-    private ConferenceDataHandler mManifestDataHandler;
+    //private ConferenceDataHandler mManifestDataHandler;
     private RemoteConferenceDataFetcher mRemoteManifestsFetcher;
 
     public SyncHelper(Context context) {
@@ -54,7 +54,7 @@ public class SyncHelper {
         mConferenceDataHandler = new ConferenceDataHandler(mContext);
         mRemoteDataFetcher = new RemoteConferenceDataFetcher(mContext);
 
-        mManifestDataHandler = new ConferenceDataHandler(mContext);
+        //mManifestDataHandler = new ConferenceDataHandler(mContext);
         mRemoteManifestsFetcher = new RemoteConferenceDataFetcher(mContext);
     }
 
@@ -263,22 +263,23 @@ public class SyncHelper {
         LOGD(TAG, "Starting remote sync.");
         boolean dataWasChanged = false;
 
-        // Fetch the remote manifest files via RemoteConferenceDataFetcher
+        // Get the manifest files listed on master manifest(if there's a new one)
         String[] manifestFiles = mRemoteManifestsFetcher.fetchConferenceDataIfNewer(
-                mManifestDataHandler.getDataTimestamp());
+                mConferenceDataHandler.getDataTimestamp(Config.MASTER_MANIFEST_FILE));
         if (manifestFiles != null) {
 
             for (String manifest : manifestFiles) {
-                mRemoteDataFetcher.setManifestURL(Config.PROD_STANDARD_BUCKET_URL + manifest.split("_")+"/" +manifest);
+                mRemoteDataFetcher.setManifestURL(Config.PROD_STANDARD_BUCKET_URL + manifest.split("_")[0] + "/" +manifest);
                 // Fetch the remote data files via RemoteConferenceDataFetcher
                 String[] dataFiles = mRemoteDataFetcher.fetchConferenceDataIfNewer(
-                        mConferenceDataHandler.getDataTimestamp());
+                        mConferenceDataHandler.getDataTimestamp(manifest));
 
                 if (dataFiles != null) {
                     LOGI(TAG, "Applying remote data for " + manifest);
                     // save the remote data to the database
-                    mConferenceDataHandler.applyConferenceData(dataFiles,
+                    mConferenceDataHandler.applyConferenceData(manifest, dataFiles,
                             mRemoteDataFetcher.getServerDataTimestamp(), true);
+
                     LOGI(TAG, "Done applying remote data for " + manifest);
 
                     // mark some data has changed, to be returned by this method
@@ -287,6 +288,7 @@ public class SyncHelper {
                     // no data to process for this manifest(everything is up to date)
                     LOGI(TAG, "No data to process for " + manifest +". Everything is up to date");
                     }
+                //mRemoteDataFetcher.markManifestSynced();
             }
             // mark that conference data sync succeeded
             PrefUtils.markSyncSucceededNow(mContext);

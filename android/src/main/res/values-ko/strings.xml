@@ -760,4 +760,5 @@
     <string name="pref_nearby_title">PhysicalWeb 실험을 활성화</string>
     <string name="title_experts_directory">전문가</string>
     <string name="title_people_ive_met">내가 만난 사람들</string>
+    <string name="all_events">모든 이벤트</string>
 </resources>

@@ -21,21 +21,37 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".ui.MyScheduleActivity">
+    tools:context=".ui.BrowseEventsActivity">
 
     <!-- Main layout -->
-    <LinearLayout
+    <com.ncode.android.apps.schedo.ui.widget.DrawShadowFrameLayout
         android:id="@+id/main_content"
         android:layout_width="match_parent"
-        android:orientation="vertical"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:clipChildren="false"
+        app:shadowDrawable="@drawable/header_shadow">
+
+        <com.ncode.android.apps.schedo.ui.widget.MultiSwipeRefreshLayout
+            android:id="@+id/swipe_refresh_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <!-- Events fragment showing the event grid -->
+            <fragment android:name="com.ncode.android.apps.schedo.ui.EventsFragment"
+                android:id="@+id/events_fragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:layout="@layout/fragment_events" />
+        </com.ncode.android.apps.schedo.ui.widget.MultiSwipeRefreshLayout>
 
         <LinearLayout style="@style/HeaderBar"
+            android:id="@+id/headerbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:clickable="true"
             android:orientation="vertical">
 
-            <include layout="@layout/toolbar_actionbar" />
+            <include layout="@layout/toolbar_actionbar" /> <!-- placeholder, empty except on L -->
 
             <!-- Spinners for additional filters -->
             <LinearLayout
@@ -57,33 +73,20 @@
                     android:layout_width="@dimen/filter_spinner_width"
                     android:layout_weight="@integer/filter_spinner_weight"
                     android:layout_height="match_parent" />
-            </LinearLayout>
 
-            <com.ncode.android.apps.schedo.ui.widget.SlidingTabLayout
-                android:background="@color/tab_background"
-                android:id="@+id/sliding_tabs"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+            </LinearLayout>
         </LinearLayout>
 
-        <com.ncode.android.apps.schedo.ui.widget.MultiSwipeRefreshLayout
-            android:id="@+id/swipe_refresh_layout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:foreground="@drawable/header_shadow">
-
-            <!-- Sessions fragments showing each day of the conference -->
-            <android.support.v4.view.ViewPager
-                android:id="@+id/view_pager"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-
-        </com.ncode.android.apps.schedo.ui.widget.MultiSwipeRefreshLayout>
-
-        <include layout="@layout/include_butter_bar" />
-    </LinearLayout>
+        <!-- Butter bar -->
+        <FrameLayout android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:layout_marginTop="?actionBarSize">
+            <include layout="@layout/include_butter_bar" />
+        </FrameLayout>
+    </com.ncode.android.apps.schedo.ui.widget.DrawShadowFrameLayout>
 
     <!-- Nav drawer -->
     <include layout="@layout/navdrawer" />
+
 </android.support.v4.widget.DrawerLayout>

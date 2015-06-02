@@ -71,7 +71,7 @@ public class ConferenceDataHandler {
 
     // Shared preferences key under which we store the timestamp that corresponds to
     // the data we currently have in our content provider.
-    private static final String SP_KEY_DATA_TIMESTAMP = "data_timestamp";
+    private static final String SP_KEY_DATA_TIMESTAMP = "data_timestamp_";
 
     // symbolic timestamp to use when we are missing timestamp data (which means our data is
     // really old or nonexistent)
@@ -141,7 +141,7 @@ public class ConferenceDataHandler {
      * @param downloadsAllowed Whether or not we are supposed to download data from the internet if needed.
      * @throws IOException If there is a problem parsing the data.
      */
-    public void applyConferenceData(String[] dataBodies, String dataTimestamp,
+    public void applyConferenceData(String manifest, String[] dataBodies, String dataTimestamp,
             boolean downloadsAllowed) throws IOException {
         LOGD(TAG, "Applying data from " + dataBodies.length + " files, timestamp " + dataTimestamp);
 
@@ -215,7 +215,7 @@ public class ConferenceDataHandler {
 
 
     // update our data timestamp
-        setDataTimestamp(dataTimestamp);
+        setDataTimestamp(manifest, dataTimestamp);
         LOGD(TAG, "Done applying conference data.");
     }
 
@@ -314,25 +314,34 @@ public class ConferenceDataHandler {
     }
 
     // Returns the timestamp of the data we have in the content provider.
-    public String getDataTimestamp() {
+    public String getDataTimestamp(String manifest) {
         return PreferenceManager.getDefaultSharedPreferences(mContext).getString(
-                SP_KEY_DATA_TIMESTAMP, DEFAULT_TIMESTAMP);
+                SP_KEY_DATA_TIMESTAMP+manifest, DEFAULT_TIMESTAMP);
     }
 
     // Sets the timestamp of the data we have in the content provider.
-    public void setDataTimestamp(String timestamp) {
-        LOGD(TAG, "Setting data timestamp to: " + timestamp);
+    public void setDataTimestamp(String manifest, String timestamp) {
+        LOGD(TAG, "Setting " + manifest +" data timestamp to: " + timestamp);
         PreferenceManager.getDefaultSharedPreferences(mContext).edit().putString(
-                SP_KEY_DATA_TIMESTAMP, timestamp).commit();
+                SP_KEY_DATA_TIMESTAMP+manifest, timestamp).commit();
     }
 
-    // Reset the timestamp of the data we have in the content provider
-    public static void resetDataTimestamp(final Context context) {
-        LOGD(TAG, "Resetting data timestamp to default (to invalidate our synced data)");
+    // Reset the timestamp of the data we have in the content provider for a manifest
+    public static void resetDataTimestamp(final Context context, String manifest) {
+        LOGD(TAG, "Resetting data timestamp to default (to invalidate our synced data) for "+manifest);
         PreferenceManager.getDefaultSharedPreferences(context).edit().remove(
-                SP_KEY_DATA_TIMESTAMP).commit();
+                SP_KEY_DATA_TIMESTAMP+manifest).commit();
     }
 
+    // Reset the timestamp of the data we have in the content provider for all manifests
+    public static void resetManifestsDataTimestamp(final Context context) {
+        LOGD(TAG, "Resetting all manifests data timestamp to default (to invalidate our synced data)");
+
+        for (String key : PreferenceManager.getDefaultSharedPreferences(context).getAll().keySet()){
+            if (key.startsWith(SP_KEY_DATA_TIMESTAMP))
+                    PreferenceManager.getDefaultSharedPreferences(context).edit().remove(key).commit();
+        }
+    }
     /**
      * A type of ConsoleRequestLogger that does not log requests and responses.
      */

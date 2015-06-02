@@ -23,7 +23,7 @@ public class Event {
     public String url;
     public String description;
     public String title;
-    public String[] days;
+    public Day[] days;
     public String[] tags;
     public String[] videos;
     public String year;
@@ -61,14 +61,17 @@ public class Event {
         for (String tag : tags) {
             sb.append("tag").append(tag);
         }
-        for (String session : sessions) {
-            sb.append("session").append(session);
+        if (sessions!=null)
+            for (String session : sessions) {
+                sb.append("session").append(session == null ? "" : session);
+            }
+        for (Day day : days) {
+            sb.append("day").append(day.getStartTimestamp());
+            sb.append("day").append(day.getEndTimestamp());
         }
-        for (String day : days)
-            sb.append("day").append(day);
-
-        for (String video : videos)
-            sb.append("video").append(video);
+        if (videos!=null)
+            for (String video : videos)
+                sb.append("video").append(video);
 
         return HashUtils.computeWeakHash(sb.toString());
     }
@@ -91,6 +94,15 @@ public class Event {
             }
         }
         return false;
+    }
+
+    public String getDays(Day[] days){
+        String[] daysList = new String[days.length*2];
+        for (int i=0,j = 0; i < days.length; i++,j+=2) {
+            daysList[j] = days[i].getStartTimestamp();
+            daysList[j+1] = days[i].getEndTimestamp();
+        }
+        return makeCommaList(daysList);
     }
 }
 

@@ -797,5 +797,6 @@
     <!-- Toast failure message if the user's wifi couldn't be updated -->
     <string name="wifi_install_error_message">Spiacenti, non siamo in grado di aggiornare la configurazione WiFi</string>
     <string name="description_i_o_hunt">I/O Hunt</string>
+    <string name="all_events">Tutti gli eventi</string>
 
 </resources>

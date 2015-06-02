@@ -19,7 +19,6 @@ package com.ncode.android.apps.schedo.sync;
 import android.content.Context;
 import android.text.TextUtils;
 
-import com.google.android.gms.common.internal.m;
 import com.ncode.android.apps.schedo.Config;
 import com.google.gson.Gson;
 import com.ncode.android.apps.schedo.io.model.DataManifest;
@@ -30,6 +29,7 @@ import com.ncode.android.apps.schedo.util.TimeUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -45,7 +45,7 @@ import static com.ncode.android.apps.schedo.util.LogUtils.*;
  * Helper class that fetches conference data from the remote server.
  */
 public class RemoteConferenceDataFetcher {
-    private static final String TAG = makeLogTag(SyncHelper.class);
+    protected static final String TAG = makeLogTag(SyncHelper.class);
 
     // The directory under which we cache our downloaded files
     private static String CACHE_DIR = "data_cache";
@@ -56,19 +56,19 @@ public class RemoteConferenceDataFetcher {
     private static final String URL_OVERRIDE_FILE_NAME = "iosched_manifest_url_override.txt";
 
     // URL of the remote manifest file
-    private String mManifestUrl = null;
+    protected String mManifestUrl = null;
 
     // timestamp of the manifest file on the server
     private String mServerTimestamp = null;
 
     // the set of cache files we have used -- we use this for cache cleanup.
-    private HashSet<String> mCacheFilesToKeep = new HashSet<String>();
+    protected HashSet<String> mCacheFilesToKeep = new HashSet<String>();
 
     // total # of bytes downloaded (approximate)
-    private long mBytesDownloaded = 0;
+    protected long mBytesDownloaded = 0;
 
     // total # of bytes read from cache hits (approximate)
-    private long mBytesReadFromCache = 0;
+    protected long mBytesReadFromCache = 0;
 
     public RemoteConferenceDataFetcher(Context context) {
         mContext = context;
@@ -87,7 +87,7 @@ public class RemoteConferenceDataFetcher {
      * @throws IOException if an error occurred during download.
      */
     public String[] fetchConferenceDataIfNewer(String refTimestamp) throws IOException {
-        if (TextUtils.isEmpty(mManifestUrl)) {
+        if (TextUtils.isEmpty(getManifestUrl())) {
             LOGW(TAG, "Manifest URL is empty (remote sync disabled!).");
             return null;
         }
@@ -111,7 +111,7 @@ public class RemoteConferenceDataFetcher {
             }
         }
 
-        HttpResponse response = httpClient.get(mManifestUrl, params);
+        HttpResponse response = httpClient.get(getManifestUrl(), params);
         if (response == null) {
             LOGE(TAG, "Request for manifest returned null response.");
             throw new IOException("Request for data manifest returned null response.");
@@ -127,9 +127,12 @@ public class RemoteConferenceDataFetcher {
                 LOGE(TAG, "Request for manifest returned empty data.");
                 throw new IOException("Error fetching conference data manifest: no data.");
             }
-            LOGD(TAG, "Manifest "+mManifestUrl+" read, contents: " + body);
+            LOGD(TAG, "Manifest read, contents: " + body);
             mBytesDownloaded += body.getBytes().length;
-            return processManifest(body);
+            if (getManifestUrl().equals(Config.MASTER_MANIFEST_URL))
+                return processMasterManifest(body);
+            else
+                return processManifest(body);
         } else if (status == HttpURLConnection.HTTP_NOT_MODIFIED) {
             // data on the server is not newer than our data
             LOGD(TAG, "HTTP_NOT_MODIFIED: data has not changed since " + refTimestamp);
@@ -177,7 +180,7 @@ public class RemoteConferenceDataFetcher {
      * @return The contents of the file.
      * @throws IOException If an error occurs.
      */
-    private String fetchFile(String url) throws IOException {
+    protected String fetchFile(String url) throws IOException {
         // If this is a relative url, consider it relative to the manifest URL
         if (!url.contains("://")) {
             if (TextUtils.isEmpty(mManifestUrl) || !mManifestUrl.contains("/")) {
@@ -262,7 +265,7 @@ public class RemoteConferenceDataFetcher {
      * does not exist in our cache.
      * @throws IOException If there is an error reading the cache.
      */
-    private String loadFromCache(String url) throws IOException {
+    protected String loadFromCache(String url) throws IOException {
         String cacheKey = getCacheKey(url);
         File cacheFile = getCacheFile(url);
         if (cacheFile.exists()) {
@@ -280,7 +283,7 @@ public class RemoteConferenceDataFetcher {
      * @param body The contents retrieved from the given URL.
      * @throws IOException If there is a problem writing the file.
      */
-    private void writeToCache(String url, String body) throws IOException {
+    protected void writeToCache(String url, String body) throws IOException {
         String cacheKey = getCacheKey(url);
         File cacheFile = getCacheFile(url);
         createCacheDir();
@@ -294,12 +297,12 @@ public class RemoteConferenceDataFetcher {
      * @param url The URL.
      * @return The cache key (guaranteed to be a valid filename)
      */
-    private String getCacheKey(String url) {
+    protected String getCacheKey(String url) {
         return HashUtils.computeWeakHash(url.trim()) + String.format("%04x", url.length());
     }
 
     // Sanitize a URL for logging purposes (only the last component is left visible).
-    private String sanitizeUrl(String url) {
+    protected String sanitizeUrl(String url) {
         int i = url.lastIndexOf('/');
         if (i >= 0 && i < url.length()) {
             return url.substring(0, i).replaceAll("[A-za-z]", "*") +
@@ -309,6 +312,66 @@ public class RemoteConferenceDataFetcher {
     }
 
     private static final String MANIFEST_FORMAT = "schedo-json-v1";
+
+    /**
+     * Process the master manifest and return the manifest filenames referenced from it.
+     * @param masterManifestJson The JSON of the master manifest file.
+     * @return The names of the set of manifest files referenced from the manifest that
+     * need to be processed because they are not on cache, or null
+     * if none needs to be processed(all already processed).
+     * @throws IOException If an error occurs while retrieving information.
+     */
+    private String[] processMasterManifest(String masterManifestJson) throws IOException {
+        LOGD(TAG, "Processing data manifest, length " + masterManifestJson.length());
+
+        DataManifest manifest = new Gson().fromJson(masterManifestJson, DataManifest.class);
+        if (manifest.format == null || !manifest.format.equals(MANIFEST_FORMAT)) {
+            LOGE(TAG, "Manifest has invalid format spec: " + manifest.format);
+            throw new IOException("Invalid format spec on manifest:" + manifest.format);
+        }
+
+        if (manifest.data_files == null || manifest.data_files.length == 0) {
+            LOGW(TAG, "Manifest does not list any files. Nothing done.");
+            return null;
+        }
+
+//        LOGD(TAG, "Manifest lists " + manifest.data_files.length + " data files.");
+//        List<String> jsons = new ArrayList<String>();
+//        for (int i = 0; i < manifest.data_files.length; i++) {
+//            String url = manifest.data_files[i];
+//            LOGD(TAG, "Processing data file: " + sanitizeUrl(url));
+//            //if (manifestNeedsToBeSynced(url))
+//            jsons.add(url);
+//        }
+        LOGD(TAG, "Master manifest has " + manifest.data_files.length + " manifest files.");
+        return manifest.data_files;
+    }
+
+    private boolean manifestNeedsToBeSynced(String url) throws IOException {
+        LOGD(TAG, "Attempting to get from cache: " + sanitizeUrl(url));
+
+        // Check if we have it in our cache first
+        String body = null;
+        try {
+            body = loadFromCache(url);
+            if (!TextUtils.isEmpty(body)) {
+                // cache hit
+                mBytesReadFromCache += body.getBytes().length;
+                mCacheFilesToKeep.add(getCacheKey(url));
+                return false;
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            LOGE(TAG, "IOException getting file from cache.");
+            // proceed anyway to cache and return it to be processed
+        }
+
+        // We don't have the file on cache, so it needs to be synced
+        LOGD(TAG, "Cache miss for " + sanitizeUrl(url));
+//      writeToCache(url, url);
+//      mCacheFilesToKeep.add(getCacheKey(url));
+        return true;
+    }
 
     /**
      * Process the data manifest and download data files referenced from it.
@@ -392,7 +455,7 @@ public class RemoteConferenceDataFetcher {
     /**
      * A type of ConsoleRequestLogger that does not log requests and responses.
      */
-    private RequestLogger mQuietLogger = new ConsoleRequestLogger(){
+    protected RequestLogger mQuietLogger = new ConsoleRequestLogger(){
         @Override
         public void logRequest(HttpURLConnection uc, Object content) throws IOException { }
 
@@ -403,5 +466,16 @@ public class RemoteConferenceDataFetcher {
 
     public void setManifestURL(String url) {
         this.mManifestUrl = url;
+    }
+
+    public void markManifestSynced() {
+        String url = getManifestUrl();
+        try {
+            writeToCache(url, url);
+            mCacheFilesToKeep.add(getCacheKey(url));
+        } catch (IOException e) {
+            LOGE(TAG,"IOError writing to cache. Failed to mark manifest: "+url+" as synced.");
+            e.printStackTrace();
+        }
     }
 }
